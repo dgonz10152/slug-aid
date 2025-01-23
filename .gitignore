@@ -20,7 +20,7 @@ coverage
 
 # Vercel
 .vercel
-
+.vision-key.json
 # Build Outputs
 .next/
 out/
