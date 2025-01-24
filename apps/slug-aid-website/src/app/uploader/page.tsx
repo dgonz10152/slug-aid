@@ -1,12 +1,11 @@
 "use client";
 
-import analyzeImage from "@/utils/cloud-vision";
+import ImageUploader from "@/components/ImageUploader";
 
 const Home = () => {
 	return (
 		<>
-			Hello
-			<button onClick={analyzeImage}>CHECK</button>
+			<ImageUploader />
 		</>
 	);
 };

@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 
 import {
 	AppBar,
@@ -14,6 +16,9 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import MenuBar from "@/components/MenuBar";
+import { collection, DocumentData, getDocs } from "firebase/firestore";
+import { db } from "@/utils/firebase-config";
+import Image from "next/image";
 
 interface Config {
 	products: string[];
@@ -21,14 +26,53 @@ interface Config {
 	image: string;
 	about: string;
 	hours: Record<string, string>;
+	dbName: string;
 }
 
 interface PageTemplateProps {
 	config: Config;
 }
 
+interface imageData {
+	urls: string[];
+}
+
 function PageTemplate({ config }: PageTemplateProps) {
-	const foodList = Array.isArray(config.products) ? config.products : [];
+	const [foodList, setFoodList] = useState<string[]>([""]);
+	const [foodImages, setFoodImages] = useState<string[]>([]);
+
+	useEffect(() => {
+		const foodArr: DocumentData = [];
+		const fetchData = async () => {
+			const querySnapshot = await getDocs(collection(db, config.dbName));
+			querySnapshot.forEach((doc) => {
+				foodArr.push(doc.data().labels);
+			});
+			console.log(foodArr.flat());
+			setFoodList(foodArr.flat() as string[]);
+		};
+
+		const fetchImages = async () => {
+			try {
+				const response = await fetch(
+					`http://localhost:3001/images/${config.dbName}`
+				);
+
+				if (!response.ok) {
+					throw new Error(`Error: ${response.statusText}`);
+				}
+				const data: imageData = await response.json();
+
+				console.log(data.urls);
+				setFoodImages(data.urls ?? []);
+			} catch (error) {
+				console.error("Error fetching images:", error);
+			}
+		};
+
+		fetchImages();
+		fetchData();
+	}, [config.dbName]);
 
 	const foodsOffered = foodList.map((food: string, index: number) => (
 		<ListItem key={index} sx={{ padding: "0", marginBottom: "-8px" }}>
@@ -98,10 +142,15 @@ function PageTemplate({ config }: PageTemplateProps) {
 						<Typography variant="h5">Current Food</Typography>
 					</Paper>
 					<Grid container spacing={3}>
-						<p>ITEM 1</p>
-						<p>ITEM 2</p>
-						<p>ITEM 3</p>
-						<p>ITEM 4</p>
+						{foodImages.map((url) => (
+							<Image
+								width={200}
+								height={200}
+								key={url}
+								src={url}
+								alt="Failed to load"
+							/>
+						))}
 					</Grid>
 				</Grid>
 			</Container>
