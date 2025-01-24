@@ -48,6 +48,7 @@ app.use(
 	})
 );
 
+//scans the pictures for labels and uploads the results to firebase
 app.post("/scan-items", async (req: Request, res: Response) => {
 	console.log("Request Body:", req.headers.body);
 	try {
@@ -79,26 +80,72 @@ app.post("/scan-items", async (req: Request, res: Response) => {
 	}
 });
 
-app.get("/images/:parameter", async (req: Request, res: Response) => {
-	const location = req.params.parameter;
+let food: { [key: string]: string[] } = {};
+let images: { [key: string]: string[] } = {};
+
+async function fetchImages(location: string) {
 	const folderRef = ref(storage, location);
 	const result = await listAll(folderRef);
 	const urlPromises = result.items.map((itemRef) => getDownloadURL(itemRef));
 
 	// Wait for all download URLs to resolve
 	const urls = await Promise.all(urlPromises);
+	return urls;
+}
 
-	res.json({ urls: urls });
-});
-
-app.get("/food/:parameter", async (req: Request, res: Response) => {
-	const location = req.params.parameter;
+async function fetchFood(location: string) {
 	const foodArr: DocumentData = [];
 	const querySnapshot = await getDocs(collection(db, location));
 	querySnapshot.forEach((doc) => {
 		foodArr.push(doc.data().labels);
 	});
-	res.json({ food: foodArr.flat() });
+
+	return foodArr.flat();
+}
+
+setInterval(() => {
+	const currentHour = new Date(Date.now()).getHours();
+	if (currentHour > 9 && currentHour < 24) console.log("INTERVAL");
+	for (const key in food) {
+		console.log("Food:", key);
+		fetchFood(key);
+	}
+	for (const key in images) {
+		console.log("Images:", key);
+		fetchImages(key);
+	}
+}, 1800000);
+
+app.get("/images/:parameter", async (req: Request, res: Response) => {
+	const location = req.params.parameter;
+
+	if (location in images) {
+		res.json({ urls: images[location] });
+		return;
+	}
+
+	const data = await fetchImages(location);
+
+	images[location] = data;
+	res.json({ urls: data });
+});
+
+const now = Date.now();
+const date = new Date(now);
+
+console.log(date.getHours());
+
+app.get("/food/:parameter", async (req: Request, res: Response) => {
+	const location = req.params.parameter;
+	if (location in food) {
+		res.json({ food: food[location] });
+		return;
+	}
+
+	const data = await fetchFood(location);
+
+	food[location] = data;
+	res.json({ food: data });
 });
 
 const PORT = process.env.EXPRESS_PORT || 5002;
