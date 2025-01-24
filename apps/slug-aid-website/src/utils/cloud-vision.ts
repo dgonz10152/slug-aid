@@ -1,6 +1,6 @@
 async function fetchData({ url, location }: { url: string; location: string }) {
 	try {
-		const response = await fetch(`http://localhost:3001/get-items`, {
+		const response = await fetch(`http://localhost:3001/scan-items`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

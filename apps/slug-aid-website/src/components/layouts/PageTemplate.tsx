@@ -16,8 +16,6 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import MenuBar from "@/components/MenuBar";
-import { collection, DocumentData, getDocs } from "firebase/firestore";
-import { db } from "@/utils/firebase-config";
 import Image from "next/image";
 
 interface Config {
@@ -37,19 +35,27 @@ interface imageData {
 	urls: string[];
 }
 
+interface foodData {
+	food: string[];
+}
+
 function PageTemplate({ config }: PageTemplateProps) {
 	const [foodList, setFoodList] = useState<string[]>([""]);
 	const [foodImages, setFoodImages] = useState<string[]>([]);
 
 	useEffect(() => {
-		const foodArr: DocumentData = [];
 		const fetchData = async () => {
-			const querySnapshot = await getDocs(collection(db, config.dbName));
-			querySnapshot.forEach((doc) => {
-				foodArr.push(doc.data().labels);
-			});
-			console.log(foodArr.flat());
-			setFoodList(foodArr.flat() as string[]);
+			try {
+				const response = await fetch(`http://localhost:3001/food/${config.dbName}`);
+				if (!response.ok) {
+					throw new Error(`Error: ${response.statusText}`);
+				}
+				const data: foodData = await response.json();
+
+				setFoodList(data.food);
+			} catch (error) {
+				console.error("Error fetching food:", error);
+			}
 		};
 
 		const fetchImages = async () => {

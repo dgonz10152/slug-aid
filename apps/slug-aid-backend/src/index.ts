@@ -1,6 +1,12 @@
 require("dotenv").config({ path: `../../.env` });
 import { initializeApp } from "firebase/app";
-import { addDoc, collection, getFirestore } from "firebase/firestore";
+import {
+	addDoc,
+	collection,
+	DocumentData,
+	getDocs,
+	getFirestore,
+} from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
 import { Request, Response } from "express";
 const express = require("express");
@@ -23,6 +29,7 @@ const fireApp = initializeApp(firebaseConfig);
 const storage = getStorage(fireApp);
 const db = getFirestore(fireApp);
 
+//uploads food labels to firebase
 async function uploadLabels(location: string, labels: string[]) {
 	console.log(location);
 	try {
@@ -41,7 +48,7 @@ app.use(
 	})
 );
 
-app.post("/get-items", async (req: Request, res: Response) => {
+app.post("/scan-items", async (req: Request, res: Response) => {
 	console.log("Request Body:", req.headers.body);
 	try {
 		const { GoogleAuth } = require("google-auth-library");
@@ -82,6 +89,16 @@ app.get("/images/:parameter", async (req: Request, res: Response) => {
 	const urls = await Promise.all(urlPromises);
 
 	res.json({ urls: urls });
+});
+
+app.get("/food/:parameter", async (req: Request, res: Response) => {
+	const location = req.params.parameter;
+	const foodArr: DocumentData = [];
+	const querySnapshot = await getDocs(collection(db, location));
+	querySnapshot.forEach((doc) => {
+		foodArr.push(doc.data().labels);
+	});
+	res.json({ food: foodArr.flat() });
 });
 
 const PORT = process.env.EXPRESS_PORT || 5002;
