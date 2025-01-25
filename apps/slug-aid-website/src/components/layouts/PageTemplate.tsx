@@ -19,7 +19,6 @@ import MenuBar from "@/components/MenuBar";
 import Image from "next/image";
 
 interface Config {
-	products: string[];
 	name: string;
 	image: string;
 	about: string;

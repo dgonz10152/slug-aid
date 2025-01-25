@@ -29,6 +29,7 @@ export default function ImageUploader() {
 		try {
 			await uploadBytes(storageRef, file);
 			const url = await getDownloadURL(storageRef);
+			analyzeImage({ url: url ?? "", location: location ?? "" });
 			setUploadedUrl(url);
 			console.log("File Uploaded Successfully");
 		} catch (error) {
@@ -54,19 +55,6 @@ export default function ImageUploader() {
 				<option value="the-cove">the-cove</option>
 				<option value="womxns-center-food-pantry">womxns-center-food-pantry</option>
 			</select>
-
-			{uploadedUrl && (
-				<button
-					className="p-4"
-					onClick={() => {
-						console.log(location);
-						analyzeImage({ url: uploadedUrl ?? "", location: location ?? "" });
-					}}
-				>
-					CheckTypes
-				</button>
-			)}
-
 			{uploadedUrl && (
 				<div>
 					<p>Uploaded image:</p>

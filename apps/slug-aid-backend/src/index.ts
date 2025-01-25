@@ -148,6 +148,16 @@ app.get("/food/:parameter", async (req: Request, res: Response) => {
 	res.json({ food: data });
 });
 
+app.get("/all-food", async (req: Request, res: Response) => {
+	const transformedFoodList = Object.entries(food).flatMap(([location, items]) =>
+		items.filter(Boolean).map((item) => ({
+			location,
+			name: item,
+		}))
+	);
+	res.json(transformedFoodList);
+});
+
 const PORT = process.env.EXPRESS_PORT || 5002;
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);

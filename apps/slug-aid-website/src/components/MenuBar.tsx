@@ -5,7 +5,6 @@ import InfoIcon from "@mui/icons-material/Info";
 import HomeIcon from "@mui/icons-material/Home";
 import FoodBankIcon from "@mui/icons-material/FoodBank";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-
 import {
 	AppBar,
 	Box,
@@ -20,9 +19,11 @@ import {
 	Typography,
 } from "@mui/material";
 
-import { useState } from "react";
 import { ThemeProvider } from "@emotion/react";
+
 import Link from "next/link";
+import SearchBar from "./SearchBar";
+import { useState } from "react";
 
 const theme = createTheme({
 	palette: {
@@ -167,18 +168,21 @@ function DrawerInfo() {
 
 export default function MenuBar() {
 	const [open, setOpen] = useState(false);
+
 	const toggleDrawer = (newOpen: boolean) => () => {
 		setOpen(newOpen);
 	};
-
 	return (
 		<>
 			<ThemeProvider theme={theme}>
 				<AppBar position="sticky" color="primary">
 					<Toolbar>
 						<IconButton onClick={toggleDrawer(true)}>
-							<MenuIcon></MenuIcon>
+							<MenuIcon />
 						</IconButton>
+						<Box sx={{ display: "flex", flexDirection: "row", flexGrow: "1" }}>
+							<SearchBar />
+						</Box>
 					</Toolbar>
 				</AppBar>
 			</ThemeProvider>
