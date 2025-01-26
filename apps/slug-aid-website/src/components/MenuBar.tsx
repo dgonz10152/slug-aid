@@ -175,11 +175,14 @@ export default function MenuBar() {
 	return (
 		<>
 			<ThemeProvider theme={theme}>
-				<AppBar position="sticky" color="primary">
+				<AppBar position="sticky" sx={{ background: "#EAB308" }}>
 					<Toolbar>
-						<IconButton onClick={toggleDrawer(true)}>
+						<IconButton sx={{ color: "white" }} onClick={toggleDrawer(true)}>
 							<MenuIcon />
 						</IconButton>
+						<Typography sx={{ color: "white", fontWeight: "bold" }}>
+							SlugAid
+						</Typography>
 						<Box sx={{ display: "flex", flexDirection: "row", flexGrow: "1" }}>
 							<SearchBar />
 						</Box>

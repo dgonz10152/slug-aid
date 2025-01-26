@@ -2,14 +2,7 @@ import Fuse, { FuseResult } from "fuse.js";
 import SearchIcon from "@mui/icons-material/Search";
 
 import { useEffect, useRef, useState } from "react";
-import {
-	alpha,
-	InputBase,
-	ListItem,
-	Menu,
-	MenuItem,
-	styled,
-} from "@mui/material";
+import { alpha, InputBase, ListItem, Menu, styled } from "@mui/material";
 import Link from "next/link";
 
 const Search = styled("div")(({ theme }) => ({
@@ -65,9 +58,6 @@ export default function SearchBar() {
 	const [results, setResults] = useState<FuseResult<SearchResults>[]>([]);
 	const searchBarRef = useRef<HTMLInputElement | null>(null);
 	const open = Boolean(anchorEl);
-
-	console.log(searchBarRef.current ? searchBarRef.current.offsetWidth : "");
-
 	// Fetch the data once on mount
 	useEffect(() => {
 		const fetchData = async () => {
@@ -106,21 +96,25 @@ export default function SearchBar() {
 		<>
 			<Search ref={searchBarRef}>
 				<SearchIconWrapper>
-					<SearchIcon />
+					<SearchIcon sx={{ color: "white" }} />
 				</SearchIconWrapper>
 				<StyledInputBase
+					sx={{ color: "white" }}
 					onKeyDown={(e) => {
 						e.stopPropagation();
 					}}
 					placeholder="Search…"
 					value={searchTerm}
+					onFocus={(e) => {
+						setAnchorEl(e.target as HTMLInputElement);
+					}}
 					onChange={(e) => {
 						setSearchTerm(e.target.value);
 						setAnchorEl(e.target as HTMLInputElement);
 						e.stopPropagation();
 					}}
 					onBlur={() => {
-						setTimeout(() => setAnchorEl(null), 100);
+						setAnchorEl(null);
 					}}
 				/>
 			</Search>
@@ -132,13 +126,7 @@ export default function SearchBar() {
 				onBlur={() => setAnchorEl(null)}
 			>
 				{results.length == 0 ? (
-					<ListItem
-						sx={{
-							width: `${searchBarRef.current ? searchBarRef.current.width : 50}px`,
-						}}
-					>
-						No results found
-					</ListItem>
+					<ListItem>No results found</ListItem>
 				) : (
 					results.map((result) => (
 						<ListItem
