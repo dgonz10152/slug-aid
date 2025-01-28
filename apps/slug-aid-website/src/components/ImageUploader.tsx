@@ -5,6 +5,46 @@ import { useState, ChangeEvent } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../utils/firebase-config";
 import analyzeImage from "@/utils/cloud-vision";
+import {
+	Box,
+	Button,
+	CircularProgress,
+	FormControl,
+	InputLabel,
+	MenuItem,
+	Select,
+	TextField,
+} from "@mui/material";
+
+async function updateStatus({
+	message,
+	location,
+}: {
+	message: string;
+	location: string;
+}) {
+	try {
+		const response = await fetch(
+			`http://localhost:3001/update-status/${location}`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					body: JSON.stringify({ message: message }),
+				},
+			}
+		);
+
+		if (!response.ok) {
+			throw new Error(`Error: ${response.statusText}`);
+		}
+
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.error("Error fetching data:", error);
+	}
+}
 
 export default function ImageUploader() {
 	// Specify the type as `File | null`
@@ -12,6 +52,7 @@ export default function ImageUploader() {
 	const [uploading, setUploading] = useState<boolean>(false);
 	const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
 	const [location, setLocation] = useState<string>("the-cove");
+	const [statusText, setStatusText] = useState<string>("");
 
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
@@ -40,23 +81,48 @@ export default function ImageUploader() {
 	};
 
 	return (
-		<div>
-			<input type="file" onChange={handleFileChange} />
+		<Box sx={{ padding: 3, maxWidth: 500, margin: "auto", background: "white" }}>
+			<FormControl fullWidth margin="normal">
+				<InputLabel id="locations-label">Location</InputLabel>
+				<Select
+					labelId="locations-label"
+					value={location}
+					onChange={(e) => setLocation(e.target.value)}
+					label="Location"
+				>
+					<MenuItem value="the-cove">The Cove</MenuItem>
+					<MenuItem value="womxns-center-food-pantry">
+						Womxns Center Food Pantry
+					</MenuItem>
+				</Select>
+			</FormControl>
 
-			<button onClick={handleUpload} disabled={uploading}>
-				{uploading ? "Uploading..." : "Upload Image"}
-			</button>
+			<TextField
+				type="file"
+				fullWidth
+				onChange={handleFileChange}
+				margin="normal"
+				variant="outlined"
+				InputLabelProps={{ shrink: true }}
+			/>
 
-			<select
-				name="locations"
-				id="locations"
-				onChange={(e) => setLocation(e.target.value)}
+			<Button
+				variant="contained"
+				fullWidth
+				color="primary"
+				onClick={handleUpload}
+				disabled={uploading}
+				sx={{ marginTop: 2 }}
 			>
-				<option value="the-cove">the-cove</option>
-				<option value="womxns-center-food-pantry">womxns-center-food-pantry</option>
-			</select>
+				{uploading ? (
+					<CircularProgress size={24} color="inherit" />
+				) : (
+					"Upload Image"
+				)}
+			</Button>
+
 			{uploadedUrl && (
-				<div>
+				<Box sx={{ marginTop: 3, textAlign: "center" }}>
 					<p>Uploaded image:</p>
 					<Image
 						src={uploadedUrl}
@@ -65,8 +131,29 @@ export default function ImageUploader() {
 						height={300}
 						layout="responsive"
 					/>
-				</div>
+				</Box>
 			)}
-		</div>
+
+			<TextField
+				label="Update Status"
+				fullWidth
+				value={statusText}
+				onChange={(e) => setStatusText(e.target.value)}
+				margin="normal"
+				variant="outlined"
+			/>
+
+			<Button
+				variant="contained"
+				color="secondary"
+				onClick={() => {
+					updateStatus({ message: statusText, location: location });
+				}}
+				fullWidth
+				sx={{ marginTop: 2 }}
+			>
+				Update Status
+			</Button>
+		</Box>
 	);
 }

@@ -71,7 +71,7 @@ function PageTemplate({ config }: PageTemplateProps) {
 				console.log(data.urls);
 				setFoodImages(data.urls ?? []);
 			} catch (error) {
-				console.error("Error fetching images:", error);
+				console.error("Error fetching status:", error);
 			}
 		};
 

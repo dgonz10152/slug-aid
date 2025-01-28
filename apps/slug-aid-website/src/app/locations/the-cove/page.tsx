@@ -1,17 +1,18 @@
-import { Metadata } from "next";
-import PageTemplate from "@/components/layouts/PageTemplate";
+"use client";
 import LocationData from "@/location-data.json";
-
-export const metadata: Metadata = {
-	title: "Testing Page",
-	description: "TESTING",
-};
+import LocationTemplate from "@/components/layouts/LocationTemplate";
+import Head from "next/head";
 
 const Home = () => {
 	const config = LocationData["the-cove"];
+	console.log(config.hours.monday);
 	return (
 		<>
-			<PageTemplate config={config} />
+			<Head>
+				<title>The Cove</title>
+				<meta name="description" content={config.about} />
+			</Head>
+			{config ? <LocationTemplate config={config} /> : <></>}
 		</>
 	);
 };

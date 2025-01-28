@@ -3,9 +3,13 @@ import { initializeApp } from "firebase/app";
 import {
 	addDoc,
 	collection,
+	doc,
 	DocumentData,
+	getDoc,
 	getDocs,
 	getFirestore,
+	onSnapshot,
+	setDoc,
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
 import { Request, Response } from "express";
@@ -25,9 +29,23 @@ const firebaseConfig = {
 	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+const locations = ["the-cove", "womxns-center-food-pantry"];
+
 const fireApp = initializeApp(firebaseConfig);
 const storage = getStorage(fireApp);
 const db = getFirestore(fireApp);
+
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+		methods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
+	})
+);
+
+let food: { [key: string]: string[] } = {};
+let images: { [key: string]: string[] } = {};
+let status: { [key: string]: string } = {};
 
 //uploads food labels to firebase
 async function uploadLabels(location: string, labels: string[]) {
@@ -40,49 +58,7 @@ async function uploadLabels(location: string, labels: string[]) {
 	}
 }
 
-app.use(
-	cors({
-		origin: "http://localhost:3000",
-		methods: ["GET", "POST", "PUT", "DELETE"],
-		credentials: true,
-	})
-);
-
-//scans the pictures for labels and uploads the results to firebase
-app.post("/scan-items", async (req: Request, res: Response) => {
-	console.log("Request Body:", req.headers.body);
-	try {
-		const { GoogleAuth } = require("google-auth-library");
-		const auth = new GoogleAuth({ apiKey });
-
-		const vision = require("@google-cloud/vision");
-		const client = new vision.ImageAnnotatorClient({
-			keyFilename: "./vision-key.json",
-		});
-
-		const { url, location } = JSON.parse(req.headers.body as string);
-		// Use await inside the async function
-		const [result] = await client.objectLocalization(url);
-		const labels = result.localizedObjectAnnotations;
-		// Send the response with the detected labels
-
-		uploadLabels(location, [
-			...new Set(labels.map((item: any) => item.name)),
-		] as string[]);
-
-		res.json({ data: labels });
-	} catch (error) {
-		// Handle errors and send appropriate responses
-		console.error(error);
-		res
-			.status(500)
-			.json({ error: "An error occurred while processing your request." });
-	}
-});
-
-let food: { [key: string]: string[] } = {};
-let images: { [key: string]: string[] } = {};
-
+//fetches the image list (urls) of any given location from firebase
 async function fetchImages(location: string) {
 	const folderRef = ref(storage, location);
 	const result = await listAll(folderRef);
@@ -93,6 +69,7 @@ async function fetchImages(location: string) {
 	return urls;
 }
 
+//fetches the food list of given location from firebase
 async function fetchFood(location: string) {
 	const foodArr: DocumentData = [];
 	const querySnapshot = await getDocs(collection(db, location));
@@ -103,19 +80,35 @@ async function fetchFood(location: string) {
 	return foodArr.flat();
 }
 
-setInterval(() => {
-	const currentHour = new Date(Date.now()).getHours();
-	if (currentHour > 9 && currentHour < 24) console.log("INTERVAL");
-	for (const key in food) {
-		console.log("Food:", key);
-		fetchFood(key);
-	}
-	for (const key in images) {
-		console.log("Images:", key);
-		fetchImages(key);
-	}
-}, 1800000);
+//fetches the status of any given location from firebase
+async function fetchStatus(location: string) {
+	let status = "";
+	const queryDoc = await getDoc(doc(db, "status", location));
 
+	if (queryDoc.exists()) {
+		status = queryDoc.data().status;
+	}
+	return status;
+}
+
+//Updates the status cache on updated values
+const statusChanged = onSnapshot(collection(db, "status"), async () => {
+	const promises = locations.map(async (locationName) => {
+		status[locationName] = await fetchStatus(locationName); // await the promise here
+	});
+
+	// Wait for all promises to resolve
+	await Promise.all(promises);
+});
+
+//Updates the food cache on updated values
+locations.forEach((location) => {
+	const locationSnapshot = onSnapshot(collection(db, location), async () => {
+		food[location] = await fetchFood(location);
+	});
+});
+
+//gives a list of urls to the pictures for any given location
 app.get("/images/:parameter", async (req: Request, res: Response) => {
 	const location = req.params.parameter;
 
@@ -130,11 +123,7 @@ app.get("/images/:parameter", async (req: Request, res: Response) => {
 	res.json({ urls: data });
 });
 
-const now = Date.now();
-const date = new Date(now);
-
-console.log(date.getHours());
-
+//gives a list of the food curently available at any given location
 app.get("/food/:parameter", async (req: Request, res: Response) => {
 	const location = req.params.parameter;
 	if (location in food) {
@@ -148,6 +137,21 @@ app.get("/food/:parameter", async (req: Request, res: Response) => {
 	res.json({ food: data });
 });
 
+//gets the current status of any given location
+app.get("/status/:parameter", async (req: Request, res: Response) => {
+	const location = req.params.parameter;
+	if (location in status) {
+		res.json({ status: status[location] });
+		return;
+	}
+
+	const data = await fetchStatus(location);
+
+	status[location] = data;
+	res.json({ status: data });
+});
+
+//gets a formatted list of all the available foods (used for the search bar)
 app.get("/all-food", async (req: Request, res: Response) => {
 	const transformedFoodList = Object.entries(food).flatMap(([location, items]) =>
 		items.filter(Boolean).map((item) => ({
@@ -156,6 +160,51 @@ app.get("/all-food", async (req: Request, res: Response) => {
 		}))
 	);
 	res.json(transformedFoodList);
+});
+
+//scans the pictures for labels and uploads the results to firebase
+app.post("/scan-items", async (req: Request, res: Response) => {
+	try {
+		const { GoogleAuth } = require("google-auth-library");
+		const auth = new GoogleAuth({ apiKey });
+
+		const vision = require("@google-cloud/vision");
+		const client = new vision.ImageAnnotatorClient({
+			keyFilename: "./vision-key.json",
+		});
+
+		const { url, location } = JSON.parse(req.headers.body as string);
+		// Use await inside the async function
+		const [result] = await client.objectLocalization(url);
+		const labels = result.localizedObjectAnnotations;
+		// Send the response with the detected labels
+		uploadLabels(location, [
+			...new Set(labels.map((item: any) => item.name)),
+		] as string[]);
+
+		//updates the cache to include the pictures
+		images[location] = await fetchImages(location);
+
+		res.json({ data: labels });
+	} catch (error) {
+		// Handle errors and send appropriate responses
+		console.error(error);
+		res
+			.status(500)
+			.json({ error: "An error occurred while processing your request." });
+	}
+});
+
+app.put("/update-status/:parameter", async (req: Request, res: Response) => {
+	try {
+		const { message } = JSON.parse(req.headers.body as string);
+		const location = req.params.parameter;
+		console.log(location);
+		await setDoc(doc(db, "status", location), { status: message });
+		console.log("Document added/updated successfully!");
+	} catch (error) {
+		console.error("Error adding/updating document:", error);
+	}
 });
 
 const PORT = process.env.EXPRESS_PORT || 5002;
