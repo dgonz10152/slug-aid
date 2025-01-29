@@ -1,84 +1,53 @@
-# Turborepo starter
+# UCSC Basic Needs Navigator
 
-This is an official starter Turborepo.
+## Overview
 
-## Using this example
+Many on-campus basic needs facilities at UCSC are underutilized due to lack of awareness and accessibility issues. This app aims to bridge that gap by:
 
-Run the following command:
+- Providing a platform for facilities to list available products (with photos).
+- Utilizing AI-powered image processing to automatically itemize and categorize uploaded images of products.
+- Offering an interactive map for students to locate and navigate to these facilities.
+- (In progress) Allowing users to leave comments, questions, and suggestions for each facility.
 
-```sh
-npx create-turbo@latest
-```
+This app ensures that students can easily access essential resources, reducing food waste and supporting a more sustainable campus.
 
-## What's inside?
+## Features
 
-This Turborepo includes the following packages/apps:
+- **AI-Powered Image Recognition:** Automatically detects and categorizes products from uploaded images, reducing manual data entry for facility staff.
+- **View Product Listings:** See what’s available at each facility, including AI-tagged images.
+- **Navigate with Google Maps:** Easily find and get directions to any facility.
+- **(Upcoming) Feedback & FAQ System:** Users can ask questions and suggest improvements, with automatic email notifications to facility managers.
+## AI Image Processing
 
-### Apps and Packages
+The app leverages AI-driven image recognition to streamline inventory management:
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+1. Facility staff upload images of available products.
+2. AI processes the images, identifies items, and categorizes them automatically.
+3. Users can browse itemized product lists without manual updates.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+This technology helps ensure that inventory remains accurate and up-to-date with minimal effort.
 
-### Utilities
+## Supported Facilities
 
-This Turborepo has some additional tools already setup for you:
+- Redwood Free Market
+- Cowell Coffee Shop
+- Produce Pop-up ($)
+- Terry-Freitas Cafe
+- The Cove
+- Center for Agroecology Farmstand ($)
+- Womxn’s Center Food Pantry
+- Ethnic Resource Centers Snack Pantry
+- Lionel Cantú Queer Center Food Pantry
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Impact on Sustainability & Social Good
 
-### Build
+Food insecurity is a significant issue at UCSC. The Redwood Free Market alone saw over 11,000 visits last year, yet food is still going to waste. This app helps by:
 
-To build all apps and packages, run the following command:
+- Making it easier for students to find and use available resources.
+- Reducing unnecessary trips to grocery stores, saving fuel and money.
+- Encouraging food donations by providing convenient drop-off locations.
+- Automating inventory updates through AI, ensuring accurate and accessible listings.
 
-```
-cd my-turborepo
-pnpm build
-```
+## Get Involved
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+Contributions and feedback are welcome! If you’d like to contribute, report an issue, or suggest a feature, feel free to open an issue or submit a pull request.
