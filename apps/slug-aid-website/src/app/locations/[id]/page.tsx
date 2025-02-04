@@ -2,9 +2,19 @@
 import LocationData from "@/location-data.json";
 import LocationTemplate from "@/components/layouts/LocationTemplate";
 import Head from "next/head";
+import { useParams } from "next/navigation";
 
-const Home = () => {
-	const config = LocationData["the-cove"];
+export default function Page() {
+	const params = useParams();
+	const id = params.id;
+	const locationKey = Array.isArray(id) ? id[0] : id;
+
+	if (!locationKey || !(locationKey in LocationData)) {
+		return <p>Location not found</p>;
+	}
+
+	const config = LocationData[locationKey as keyof typeof LocationData];
+
 	console.log(config.hours.monday);
 	return (
 		<>
@@ -15,6 +25,4 @@ const Home = () => {
 			{config ? <LocationTemplate config={config} /> : <></>}
 		</>
 	);
-};
-
-export default Home;
+}

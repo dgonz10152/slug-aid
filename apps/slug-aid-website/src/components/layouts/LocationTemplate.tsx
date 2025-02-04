@@ -23,7 +23,6 @@ interface Config {
 		image: string;
 		about: string;
 		hours: Record<string, string>;
-		warning: string;
 		dbName: string;
 	};
 }
