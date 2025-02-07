@@ -5,8 +5,8 @@ import MenuBar from "../../components/MenuBar";
 import locationData from "@/location-data.json";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import FoodIcon from "@/components/FoodIcon";
 import {
-	Box,
 	Button,
 	Dialog,
 	DialogContent,
@@ -29,8 +29,9 @@ interface LocationInterface {
 const App = () => {
 	// const router = useRouter();
 	const [open, setOpen] = useState(false);
-	const [location, setLocation] =
-		useState<keyof typeof locationData>("the-cove");
+	const [location, setLocation] = useState<keyof typeof locationData>(
+		"redwood-free-market"
+	);
 
 	function onClose() {
 		setOpen(false);
@@ -49,12 +50,14 @@ const App = () => {
 		return (
 			<Dialog open={open} onClose={onClose}>
 				<DialogTitle>{currentLocation.name as string}</DialogTitle>
-				<Image
-					src={currentLocation.image}
-					width={10000}
-					height={300}
-					alt={currentLocation.name + " Picture"}
-				/>
+				<div className="w-full aspect-square relative bg-slate-300 h-[100vw] md:h-[30vw]">
+					<Image
+						src={currentLocation.image}
+						className="w-full h-full object-cover"
+						fill
+						alt={currentLocation.name + " Picture"}
+					/>
+				</div>
 				<DialogContent>
 					<Typography>{currentLocation.about}</Typography>
 				</DialogContent>
@@ -92,7 +95,9 @@ const App = () => {
 								onClick={() =>
 									handleClick({ location: facility.dbName } as LocationInterface)
 								}
-							/>
+							>
+								<FoodIcon style={{ width: "30px", height: "30px" }} />
+							</AdvancedMarker>
 						);
 					})}
 				</Map>

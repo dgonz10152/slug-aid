@@ -1,42 +1,162 @@
 {
-	"the-cove": {
-		"name": "The Cove",
-		"dbName": "the-cove",
-		"image": "https://i0.wp.com/cityonahillpress.com/wp-content/uploads/2022/02/1-MGH_9038-scaled-e1643910522871.jpg?fit=1706%2C1369&ssl=1",
-		"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+	"redwood-free-market": {
+		"name": "Redwood Free Market",
+		"dbName": "redwood-free-market",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fredwood%20free%20market.jpg?alt=media&token=11e2010c-133e-4306-bfef-d4d836c50bdb",
+		"about": "The Redwood Free Market at UC Santa Cruz is a student-run, donation-based thrift initiative that promotes sustainability and mutual aid. Located in the Redwood Building at College Eight (Rachel Carson College), it offers free clothing, school supplies, and household items to students in need. The market operates on a \"take what you need, donate what you can\" philosophy, reducing waste and fostering community support.",
 		"dynamicLocation": false,
 		"location": {
-			"lat": 36.9907,
-			"lng": -122.0584
+			"lat": 36.99166244879438,
+			"lng": -122.06441695766976
 		},
 		"hours": {
-			"monday": "1am-2am",
-			"tuesday": "3am-4am",
-			"wednesday": "5am-6am",
-			"thursday": "7am-8am",
-			"friday": "9am-10am",
-			"saturday": "11am-12pm",
-			"sunday": "1pm-2pm"
+			"monday": "2pm-5pm",
+			"tuesday": "9am-1pm",
+			"wednesday": "2pm-5pm",
+			"thursday": "9am-1pm",
+			"friday": "9am-2pm",
+			"saturday": "Closed",
+			"sunday": "Closed"
+		}
+	},
+	"produce-pop-up": {
+		"name": "Produce Pop Up",
+		"dbName": "produce-pop-up",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2FProduce%20Pop%20Up.png?alt=media&token=bab86a1d-7cc9-4437-ae9e-65e0d7d6abbf",
+		"about": "Low-cost produce stand with fresh fruits & veggies from the UCSC Farm & Santa Cruz Farmers' Market. The Produce Pop-Up aims to increase access to fresh, nutritious food for students and the campus community.Cash, check, card & EBT accepted.",
+		"dynamicLocation": false,
+		"location": {
+			"lat": 36.99589,
+			"lng": -122.06122
+		},
+		"hours": {
+			"monday": "Closed",
+			"tuesday": "Closed",
+			"wednesday": "11AM-3PM",
+			"thursday": "Closed",
+			"friday": "11AM-3PM",
+			"saturday": "Closed",
+			"sunday": "Closed"
+		}
+	},
+	"cowell-coffee-shop": {
+		"name": "Cowell Coffee Shop",
+		"dbName": "cowell-coffee-shop",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fcowell.png?alt=media&token=365a8161-a1b8-4cc5-8f5b-16233f237276",
+		"about": "Cowell Coffee Shop is a student-run cafe non-transactional designed to increase student food security. Offerings include premade food, fresh pressed juices, coffee, food recovery items from our campus and community partners, and more!",
+		"dynamicLocation": false,
+		"location": {
+			"lat": 36.99723714376621,
+			"lng": -122.05308491533955
+		},
+		"hours": {
+			"monday": "Closed",
+			"tuesday": "Closed",
+			"wednesday": "11AM-3PM",
+			"thursday": "Closed",
+			"friday": "11AM-3PM",
+			"saturday": "Closed",
+			"sunday": "Closed"
+		}
+	},
+	"center-for-agroecology-farmstand": {
+		"name": "Center for Agroecology Farmstand",
+		"dbName": "center-for-agroecology-farmstand",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Ffarmstand.jpg?alt=media&token=6a0a0760-d997-4ea0-9385-b283cc02de9a",
+		"about": "Features organic vegetables, fruit, and flowers grown at the UCSC Farm and Chadwick Garden by Center for Agroecology staff and students. Accepted forms of payment include credit cards, cash, check, and EBT payments. If paying with a card, please bring a smart device to pay for your produce via our online payment system ",
+		"dynamicLocation": false,
+		"location": {
+			"lat": 36.983732048885166,
+			"lng": -122.0551838
+		},
+		"hours": {
+			"monday": "Closed",
+			"tuesday": "Closed",
+			"wednesday": "Closed",
+			"thursday": "12:30pm-6pm",
+			"friday": "Closed",
+			"saturday": "Closed",
+			"sunday": "Closed"
+		}
+	},
+	"terry-freitas-commons": {
+		"name": "Terry Freitas Commons",
+		"dbName": "terry-freitas-commons",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Ftfc.jpg?alt=media&token=9bea9081-aaf0-44ce-8602-96b7202051bc",
+		"about": "Terry Freitas Commons (TFC) is a fully student-led organization that serves as a lounge and food pantry for all students. TFC also provides a welcoming space for people to study, have meetings, and socialize through playing pool, piano, and games\nTFC has had a long legacy as an organization that is by the students and for the students. It was created to provide a welcoming space for students to connect, play pool, express themselves, explore social justice on a global level, and study. \nThroughout the academic year, a number of programs are held at TFC, whether they're hosted by the student team or collaborations with other organizations to provide programming that reflects the themes of College Nine-International and Global Perspectives and John R. Lewis College-Social Justice and Community. \nDuring the day, Terry Freitas Commons is open as a lounge and study area. We hope that residents find a home away from their rooms at Terry Freitas Commons.\nHours, events, and all information are updated on TFC’s Instagram, @tfc_ucsc.",
+		"dynamicLocation": false,
+		"location": {
+			"lat": 37.00053964112156,
+			"lng": -122.0578970846604
+		},
+		"hours": {
+			"monday": "10am-8pm",
+			"tuesday": "10am-8pm",
+			"wednesday": "10am-6pm",
+			"thursday": "10am-8pm",
+			"friday": "10am-8pm",
+			"saturday": "10am-6pm",
+			"sunday": "Closed"
 		}
 	},
 	"womxns-center-food-pantry": {
 		"name": "Womxn's Center Food Pantry",
 		"dbName": "womxns-center-food-pantry",
-		"image": "https://i0.wp.com/cityonahillpress.com/wp-content/uploads/2022/02/1-MGH_9038-scaled-e1643910522871.jpg?fit=1706%2C1369&ssl=1",
-		"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fwomens%20center%20.jpg?alt=media&token=75438937-e4a1-461a-8182-4049db0ba299",
+		"about": "The UCSC Women's Center Food Pantry is a vital resource designed to support students who may be facing food insecurity. Located on the UC Santa Cruz campus, this pantry provides free, nutritious food items to all students in need, prioritizing those who are most vulnerable, including women, gender non-conforming individuals, and survivors of violence. The pantry is stocked with a variety of non-perishable foods, fresh produce, and sometimes hygiene products. Its mission is to ensure that no student has to choose between their education and meeting their basic needs. The center also offers a welcoming and supportive environment, encouraging students to access the resources without stigma, fostering a sense of community, care, and inclusion. The pantry is one part of the Women's Center's broader efforts to empower and uplift students, especially those who face barriers to academic success and well-being.",
 		"dynamicLocation": false,
 		"location": {
-			"lat": 36.9905,
-			"lng": -122.0584
+			"lat": 36.979629926914114,
+			"lng": -122.0514509423302
 		},
 		"hours": {
-			"monday": "1am-2am",
-			"tuesday": "3am-4am",
-			"wednesday": "5am-6am",
-			"thursday": "7am-8am",
-			"friday": "9am-10am",
-			"saturday": "11am-12pm",
-			"sunday": "1pm-2pm"
+			"monday": "Closed",
+			"tuesday": "10am-4pm",
+			"wednesday": "10am-4pm",
+			"thursday": "10am-4pm",
+			"friday": "Closed",
+			"saturday": "Closed",
+			"sunday": "Closed"
+		}
+	},
+	"ethnic-resource-centers-snack-pantry": {
+		"name": "Ethnic Resource Centers Snack Pantry",
+		"dbName": "ethnic-resource-centers-snack-pantry",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fethnic.jpg?alt=media&token=390c4b0a-62b2-4563-b701-98019d99da2e",
+		"about": "Located in the 3rd floor of the Bay Tree Building in Quarry Plaza, the Ethnic Resource Center's Snack Pantry at UCSC is a vital resource designed to support students from all cultural and ethnic backgrounds. Located within the Ethnic Resource Center, this pantry provides free snacks and beverages to students, offering a quick, convenient way to stay energized throughout the day. By offering a variety of culturally inclusive and dietary-friendly options, the Snack Pantry strives to meet the diverse needs of the UCSC student body. It aims to foster a sense of community, accessibility, and well-being, ensuring that students feel supported and able to focus on their academic and personal growth. Whether you need a snack between classes or a little extra fuel for studying, the Ethnic Resource Center's Snack Pantry is there to help!",
+		"dynamicLocation": false,
+		"location": {
+			"lat": 36.99783576175809,
+			"lng": -122.05557767995148
+		},
+		"hours": {
+			"monday": "10am-4pm",
+			"tuesday": "10am-4pm",
+			"wednesday": "10am-4pm",
+			"thursday": "10am-4pm",
+			"friday": "10am-4pm",
+			"saturday": "Closed",
+			"sunday": "Closed"
+		}
+	},
+	"lionel-cantu-queer-center-food-pantry": {
+		"name": "Lionel Cantu Queer Center Food Pantry",
+		"dbName": "lionel-cantu-queer-center-food-pantry",
+		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fcantu.jpg?alt=media&token=34264da3-35f7-4147-b53d-c06623cd9ce0",
+		"about": "The Lionel Cantu Queer Center Food Pantry at UCSC is a crucial resource designed to support LGBTQ+ students and allies in the campus community. This pantry provides free, nutritious food items to ensure students have access to essential nourishment, especially during times of need. The Food Pantry offers a variety of items that cater to diverse dietary preferences and needs, creating an inclusive space where students can access sustenance without judgment. The Cantu Queer Center’s Food Pantry reflects the center’s commitment to fostering a safe and supportive environment, helping students focus on their academic and personal growth while ensuring they have the resources to thrive. Whether you're in need of a quick meal or pantry staples, the Lionel Cantu Queer Center Food Pantry is here to provide nourishment and care to the UCSC LGBTQ+ community.",
+		"dynamicLocation": false,
+		"location": {
+			"lat": 37.00082720870355,
+			"lng": -122.05390002883489
+		},
+		"hours": {
+			"monday": "Closed",
+			"tuesday": "10am-5pm",
+			"wednesday": "10am-5pm",
+			"thursday": "10am-5pm",
+			"friday": "10am-5pm",
+			"saturday": "Closed",
+			"sunday": "Closed"
 		}
 	}
 }

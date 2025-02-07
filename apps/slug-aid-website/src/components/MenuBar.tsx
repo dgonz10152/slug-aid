@@ -19,6 +19,8 @@ import {
 	Typography,
 } from "@mui/material";
 
+import LocationData from "@/location-data.json";
+
 import { ThemeProvider } from "@emotion/react";
 
 import Link from "next/link";
@@ -28,7 +30,7 @@ import { useState } from "react";
 const theme = createTheme({
 	palette: {
 		primary: {
-			main: "#eab308",
+			main: "#f6c744",
 		},
 	},
 });
@@ -60,99 +62,21 @@ function DrawerInfo() {
 						MAP
 					</ListItemButton>
 				</ul>
-				<ul>
-					<ListItemButton href="/locations/the-cove" className="text-black">
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						THE COVE
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/womxns-center-food-pantry"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						WOMXNS CENTER FOOD PANTRY
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/terry-freitas-commons"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						TERRY FREITAS COMMON
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/redwood-free-market"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						REDWOOD FREE MARKET
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton href="/locations/produce-pop-up" className="text-black">
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						PRODUCE POP UP
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/lionel-cantu-queer-center-food-pantry"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						LIONEL CANTU QUEER CENTER FOOD PANTRY
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/ethnic-resource-centers-snack-pantry"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						ETHNIC RESOURCE CENTERS SNACK PANTRY
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/cowell-coffee-shop"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						COWELL COFFEE SHOP
-					</ListItemButton>
-				</ul>
-				<ul>
-					<ListItemButton
-						href="/locations/center-for-agroecology-farmstand"
-						className="text-black"
-					>
-						<ListItemIcon>
-							<FoodBankIcon />
-						</ListItemIcon>
-						CENTER FOR AGROECOLOGY FARMSTAND
-					</ListItemButton>
-				</ul>
+				{Object.entries(LocationData).map(([key, value]) => {
+					return (
+						<ul key={key}>
+							<ListItemButton
+								href={"/locations/" + value.dbName}
+								className="text-black"
+							>
+								<ListItemIcon>
+									<FoodBankIcon />
+								</ListItemIcon>
+								{value.name.toUpperCase()}
+							</ListItemButton>
+						</ul>
+					);
+				})}
 				<ul>
 					<ListItemButton href="/about" className="text-black">
 						<ListItemIcon>
@@ -175,7 +99,7 @@ export default function MenuBar() {
 	return (
 		<>
 			<ThemeProvider theme={theme}>
-				<AppBar position="sticky" sx={{ background: "#EAB308" }}>
+				<AppBar position="sticky" sx={{ background: "#f6c744" }}>
 					<Toolbar>
 						<IconButton sx={{ color: "white" }} onClick={toggleDrawer(true)}>
 							<MenuIcon />

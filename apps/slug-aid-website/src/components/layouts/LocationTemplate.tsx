@@ -39,6 +39,7 @@ export default function LocationTemplate({ config }: Config) {
 					throw new Error(`Error: ${response.statusText}`);
 				}
 				const data: foodData = await response.json();
+				console.log(data.food);
 
 				setFoodList(data.food);
 			} catch (error) {
@@ -123,7 +124,7 @@ export default function LocationTemplate({ config }: Config) {
 	return (
 		<>
 			<MenuBar />
-			<div className="text-[4.5rem] font-black flex justify-center bg-white text-[#3B82F6]">
+			<div className="text-[4.5rem] font-black flex justify-center p-4 bg-white text-slugBlue">
 				<h1>{config.name}</h1>
 			</div>
 			{/* Warning bar */}
@@ -150,14 +151,14 @@ export default function LocationTemplate({ config }: Config) {
 			{/* Product Labels */}
 			<div className="bg-white flex justify-center pt-5">
 				<div className="w-10/12">
-					<h2 className="text-[#8a8a8d] text-3xl font-bold">Products Available</h2>
-					<p className="text-[#c4c4c6] font-semibold text-2xl">
+					<h2 className="text-slugBlue text-3xl font-bold">Products Available</h2>
+					<p className="text-slugSecondaryBlue font-semibold text-2xl">
 						{foodList.join(", ")}
 					</p>
 				</div>
 			</div>
 			{/* Product Images */}
-			<div className="bg-white flex justify-center">
+			<div className="bg-white flex justify-center pb-12">
 				<div className="w-10/12 md:flex md:flex-row md:justify-between flex-wrap">
 					{foodImages ? (
 						foodImages.map((url) => <ImageCard key={url} src={url} />)
@@ -167,44 +168,48 @@ export default function LocationTemplate({ config }: Config) {
 				</div>
 			</div>
 			{/* Facility Hours */}
-			<div className="bg-white flex justify-center">
-				<div className="w-10/12">
-					<h2 className="text-[#8a8a8d] text-3xl font-bold">Facility Hours</h2>
-				</div>
-			</div>
-			<div className="bg-white flex justify-center text-[#c4c4c6] font-semibold">
-				<div className="w-10/12 flex flex-row">
-					<div className="text-2xl">
-						<h3>Monday:</h3>
-						<h3>Tuesday:</h3>
-						<h3>Wednesday:</h3>
-						<h3>Thursday:</h3>
-						<h3>Friday:</h3>
-						<h3>Saturday:</h3>
-						<h3>Sunday:</h3>
+			<div className="py-12">
+				<div className="bg-white flex justify-center">
+					<div className="w-10/12">
+						<h2 className="text-slugBlue text-3xl font-bold">Facility Hours</h2>
 					</div>
-					<div className="flex flex-row-reverse md:flex-row md: px-10 flex-grow">
-						<div className="text-right md:text-left text-2xl">
-							<h3>{config.hours.monday}</h3>
-							<h3>{config.hours.tuesday}</h3>
-							<h3>{config.hours.wednesday}</h3>
-							<h3>{config.hours.thursday}</h3>
-							<h3>{config.hours.friday}</h3>
-							<h3>{config.hours.saturday}</h3>
-							<h3>{config.hours.sunday}</h3>
+				</div>
+				<div className="bg-white flex justify-center text-slugSecondaryBlue font-semibold">
+					<div className="w-10/12 flex flex-row">
+						<div className="text-2xl">
+							<h3>Monday:</h3>
+							<h3>Tuesday:</h3>
+							<h3>Wednesday:</h3>
+							<h3>Thursday:</h3>
+							<h3>Friday:</h3>
+							<h3>Saturday:</h3>
+							<h3>Sunday:</h3>
+						</div>
+						<div className="flex flex-row-reverse md:flex-row md: px-10 flex-grow">
+							<div className="text-right md:text-left text-2xl">
+								<h3>{config.hours.monday}</h3>
+								<h3>{config.hours.tuesday}</h3>
+								<h3>{config.hours.wednesday}</h3>
+								<h3>{config.hours.thursday}</h3>
+								<h3>{config.hours.friday}</h3>
+								<h3>{config.hours.saturday}</h3>
+								<h3>{config.hours.sunday}</h3>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 			{/* About */}
-			<div className="bg-white flex justify-center py-5">
+			<div className="bg-white flex justify-center py-12">
 				<div className="w-10/12">
-					<h2 className="text-[#8a8a8d] text-3xl font-bold">About</h2>
-					<h3 className="text-[#c4c4c6] font-semibold text-2xl">{config.about}</h3>
+					<h2 className="text-slugBlue text-3xl font-bold">About</h2>
+					<h3 className="text-slugSecondaryBlue font-semibold text-2xl">
+						{config.about}
+					</h3>
 				</div>
 			</div>
 			{/* Footer */}
-			<div className="bg-[#d8d8d8] h-14"></div>
+			<div className="bg-slugBlue h-32"></div>
 		</>
 	);
 }

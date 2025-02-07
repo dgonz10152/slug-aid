@@ -5,6 +5,8 @@ import { useState, ChangeEvent } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../utils/firebase-config";
 import analyzeImage from "@/utils/cloud-vision";
+import LocationData from "@/location-data.json";
+
 import {
 	Box,
 	Button,
@@ -90,10 +92,11 @@ export default function ImageUploader() {
 					onChange={(e) => setLocation(e.target.value)}
 					label="Location"
 				>
-					<MenuItem value="the-cove">The Cove</MenuItem>
-					<MenuItem value="womxns-center-food-pantry">
-						Womxns Center Food Pantry
-					</MenuItem>
+					{Object.entries(LocationData).map(([key, location]) => (
+						<MenuItem key={key} value={key}>
+							{location.name}
+						</MenuItem>
+					))}
 				</Select>
 			</FormControl>
 

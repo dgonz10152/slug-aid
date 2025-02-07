@@ -29,7 +29,17 @@ const firebaseConfig = {
 	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const locations = ["the-cove", "womxns-center-food-pantry"];
+const locations = [
+	"the-cove",
+	"womxns-center-food-pantry",
+	"redwood-free-market",
+	"cowell-coffee-shop",
+	"produce-pop-up",
+	"terry-freitas-cafe",
+	"center-for-agroecology-farmstand",
+	"ethnic-resource-centers-snack-pantry",
+	"lionel-cantú-queer-center-food-pantry",
+];
 
 const fireApp = initializeApp(firebaseConfig);
 const storage = getStorage(fireApp);
