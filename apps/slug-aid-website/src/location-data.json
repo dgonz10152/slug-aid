@@ -11,10 +11,10 @@
 		},
 		"hours": {
 			"monday": "2pm-5pm",
-			"tuesday": "9am-1pm",
-			"wednesday": "2pm-5pm",
-			"thursday": "9am-1pm",
-			"friday": "9am-2pm",
+			"tuesday": "9am-1pm, 2pm-5pm",
+			"wednesday": "9am-1pm, 2pm-5pm",
+			"thursday": "9am-1pm, 2pm-5pm",
+			"friday": "9am-1pm",
 			"saturday": "Closed",
 			"sunday": "Closed"
 		}

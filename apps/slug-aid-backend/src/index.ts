@@ -38,7 +38,7 @@ const locations = [
 	"terry-freitas-cafe",
 	"center-for-agroecology-farmstand",
 	"ethnic-resource-centers-snack-pantry",
-	"lionel-cantú-queer-center-food-pantry",
+	"lionel-cantu-queer-center-food-pantry",
 ];
 
 const fireApp = initializeApp(firebaseConfig);

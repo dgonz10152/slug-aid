@@ -1,9 +1,10 @@
 "use client";
 
 import MenuBar from "@/components/MenuBar";
-import { Dialog, DialogContent } from "@mui/material";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Footer from "../Footer";
+import { Dialog, DialogContent } from "@mui/material";
 
 interface imageData {
 	urls: string[];
@@ -26,6 +27,7 @@ interface Config {
 		dbName: string;
 	};
 }
+
 export default function LocationTemplate({ config }: Config) {
 	const [foodList, setFoodList] = useState<string[]>([""]);
 	const [foodImages, setFoodImages] = useState<string[]>([]);
@@ -209,7 +211,11 @@ export default function LocationTemplate({ config }: Config) {
 				</div>
 			</div>
 			{/* Footer */}
-			<div className="bg-slugBlue h-32"></div>
+			<div className="bg-slugBlue h-32">
+				<div>
+					<Footer />
+				</div>
+			</div>
 		</>
 	);
 }
