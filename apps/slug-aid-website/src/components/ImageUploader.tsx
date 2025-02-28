@@ -26,16 +26,13 @@ async function updateStatus({
 	location: string;
 }) {
 	try {
-		const response = await fetch(
-			`http://localhost:3001/update-status/${location}`,
-			{
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-					body: JSON.stringify({ message: message }),
-				},
-			}
-		);
+		const response = await fetch(`api/update-status/${location}`, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+				body: JSON.stringify({ message: message }),
+			},
+		});
 
 		if (!response.ok) {
 			throw new Error(`Error: ${response.statusText}`);

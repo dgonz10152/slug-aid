@@ -13,11 +13,12 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
 import { Request, Response } from "express";
+const { createServer } = require("@vercel/node");
+
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
-const apiKey = process.env.GOOGLE_API_KEY;
 
 const firebaseConfig = {
 	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -220,7 +221,4 @@ app.put("/update-status/:parameter", async (req: Request, res: Response) => {
 	}
 });
 
-const PORT = process.env.EXPRESS_PORT || 5002;
-app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`);
-});
+module.exports = createServer(app);

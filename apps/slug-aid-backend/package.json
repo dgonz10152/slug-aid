@@ -3,9 +3,9 @@
 	"version": "1.0.0",
 	"main": "index.ts",
 	"scripts": {
-		"dev": "nodemon src/index.ts",
+		"dev": "nodemon api/index.ts",
 		"build": "tsc",
-		"start": "node dist/index.js"
+		"start": "node api/index.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -13,6 +13,7 @@
 	"description": "",
 	"dependencies": {
 		"@google-cloud/vision": "^4.3.2",
+		"@vercel/node": "^5.1.10",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
 		"express": "^4.21.2",

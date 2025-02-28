@@ -62,7 +62,7 @@ export default function SearchBar() {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const response = await fetch(`http://localhost:3001/all-food`);
+				const response = await fetch(`/api/all-food`);
 				if (!response.ok) {
 					throw new Error(`Error: ${response.statusText}`);
 				}
