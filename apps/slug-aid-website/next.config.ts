@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
 			"i0.wp.com",
 		], // Add Firebase Storage domain here
 	},
-	output: "standalone",
+	distDir: "build",
 };
 
 export default nextConfig;
