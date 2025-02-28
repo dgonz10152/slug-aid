@@ -57,13 +57,13 @@ function LinkSection() {
 						<Link href={"/map"} className="text-base underline font-bold">
 							Map
 						</Link>
-						<Link href={"/about"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							About Us
 						</Link>
-						<Link href={"/get-involved"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							Get Involved
 						</Link>
-						<Link href={"/help"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							Help
 						</Link>
 					</div>
@@ -71,16 +71,16 @@ function LinkSection() {
 				<div className="py-3">
 					<h1 className="text-xl font-bold">Social Media</h1>
 					<div className="text-neutral-300 flex flex-col">
-						<Link href={"/map"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							Instagram <Instagram sx={{ color: "white" }} />
 						</Link>
-						<Link href={"/map"} className="text-base underline font-bold h-6 flex">
+						<Link href={"/"} className="text-base underline font-bold h-6 flex">
 							TikTok
 							<div className="w-7">
 								<TikTokIcon color="white" />
 							</div>
 						</Link>
-						<Link href={"/get-involved"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							X<XIcon sx={{ color: "white", fontSize: 18 }} />
 						</Link>
 					</div>
@@ -90,13 +90,13 @@ function LinkSection() {
 				<div className="py-3">
 					<h1 className="text-xl font-bold">Contact Information</h1>
 					<div className="text-neutral-300 flex flex-col">
-						<Link href={"/map"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							basicnds@ucsc.edu
 						</Link>
-						<Link href={"/map"} className="text-base underline font-bold">
+						<Link href={"/"} className="text-base underline font-bold">
 							CEJA@ucsc.edu
 						</Link>
-						<Link href={"/map"} className="text-base underline font-bold h-6 flex">
+						<Link href={"/"} className="text-base underline font-bold h-6 flex">
 							831-459-4446
 						</Link>
 					</div>
@@ -119,9 +119,6 @@ export default function Footer() {
 					</div>
 				</ThemeProvider>
 			</div>
-			<p className="text-slugSecondaryBlue px-10 py-3">
-				©2025 UC Santa Cruz. All rights reserved.
-			</p>
 		</div>
 	);
 }

@@ -175,12 +175,15 @@ app.get("/all-food", async (req: Request, res: Response) => {
 //scans the pictures for labels and uploads the results to firebase
 app.post("/scan-items", async (req: Request, res: Response) => {
 	try {
-		const { GoogleAuth } = require("google-auth-library");
-		const auth = new GoogleAuth({ apiKey });
+		const visionKeyJson = Buffer.from(
+			process.env.VISION_KEY_JSON ?? "",
+			"base64"
+		).toString("utf-8");
+		const credentials = JSON.parse(visionKeyJson);
 
 		const vision = require("@google-cloud/vision");
 		const client = new vision.ImageAnnotatorClient({
-			keyFilename: "./vision-key.json",
+			credentials,
 		});
 
 		const { url, location } = JSON.parse(req.headers.body as string);

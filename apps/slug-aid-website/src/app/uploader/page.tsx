@@ -4,7 +4,7 @@ import ImageUploader from "@/components/ImageUploader";
 
 const Home = () => {
 	return (
-		<div className="h-1/2 bg-white ">
+		<div className="h-[100vh] bg-white flex justify-center items-center">
 			<ImageUploader />
 		</div>
 	);
