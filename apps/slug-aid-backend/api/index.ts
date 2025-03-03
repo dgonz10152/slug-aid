@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import {
 	addDoc,
 	collection,
+	disablePersistentCacheIndexAutoCreation,
 	doc,
 	DocumentData,
 	getDoc,
@@ -13,7 +14,7 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
 import { Request, Response } from "express";
-const { createServer } = require("@vercel/node");
+// const { createServer } = require("@vercel/node");
 
 const express = require("express");
 const cors = require("cors");
@@ -164,12 +165,27 @@ app.get("/status/:parameter", async (req: Request, res: Response) => {
 
 //gets a formatted list of all the available foods (used for the search bar)
 app.get("/all-food", async (req: Request, res: Response) => {
+	console.log(Object.keys(food).length === 0);
+
+	if (Object.keys(food).length === 0) {
+		// Fetch all locations in parallel and wait for them to complete
+		const results = await Promise.all(
+			locations.map(async (location) => {
+				const data = await fetchFood(location);
+				food[location] = data;
+				return { location, data };
+			})
+		);
+	}
+
+	// Transform the food data into the expected response format
 	const transformedFoodList = Object.entries(food).flatMap(([location, items]) =>
 		items.filter(Boolean).map((item) => ({
 			location,
 			name: item,
 		}))
 	);
+
 	res.json(transformedFoodList);
 });
 
@@ -221,4 +237,4 @@ app.put("/update-status/:parameter", async (req: Request, res: Response) => {
 	}
 });
 
-module.exports = createServer(app);
+module.exports = app;
