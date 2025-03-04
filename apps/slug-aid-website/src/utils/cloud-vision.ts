@@ -1,12 +1,15 @@
 async function fetchData({ url, location }: { url: string; location: string }) {
 	try {
-		const response = await fetch(`/api/scan-items`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				body: JSON.stringify({ url: url, location: location }),
-			},
-		});
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/scan-items`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					body: JSON.stringify({ url: url, location: location }),
+				},
+			}
+		);
 
 		if (!response.ok) {
 			throw new Error(`Error: ${response.statusText}`);

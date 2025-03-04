@@ -1,3 +1,8 @@
 {
-	"builds": [{ "src": "next.config.ts", "use": "@vercel/next" }]
+	"projects": [
+		{
+			"src": "apps/slug-aid-website/",
+			"use": "@vercel/next"
+		}
+	]
 }

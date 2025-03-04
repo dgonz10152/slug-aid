@@ -8,7 +8,7 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"vercel-build": "npm run prepare && next build"
+		"vercel-build": "next build"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.13.5",

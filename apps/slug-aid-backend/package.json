@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"main": "index.ts",
 	"scripts": {
-		"dev": "nodemon api/index.ts",
+		"dev": "vercel dev -l 3001",
 		"build": "tsc",
 		"start": "node api/index.ts"
 	},

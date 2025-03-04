@@ -62,13 +62,14 @@ export default function SearchBar() {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const response = await fetch(`/api/all-food`);
+				const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/all-food`);
 				if (!response.ok) {
 					throw new Error(`Error: ${response.statusText}`);
 				}
 				const data: SearchResults[] = await response.json();
 				setFoodList(data);
 			} catch (error) {
+				console.log(`${process.env.NEXT_PUBLIC_API_URL}/all-food`);
 				console.error("Error fetching food:", error);
 			}
 		};
