@@ -1,8 +1,0 @@
-{
-	"projects": [
-		{
-			"src": "apps/slug-aid-website/",
-			"use": "@vercel/next"
-		}
-	]
-}

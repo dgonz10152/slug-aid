@@ -11,6 +11,7 @@ import {
 	getFirestore,
 	onSnapshot,
 	setDoc,
+	deleteDoc,
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
 import { Request, Response } from "express";
@@ -49,13 +50,16 @@ const db = getFirestore(fireApp);
 
 app.use(
 	cors({
-		origin: "https://slug-aid.vercel.app",
+		origin: "http://localhost:3000",
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
 	})
 );
 
-let food: { [key: string]: string[] } = {};
+// Parse JSON request bodies
+app.use(express.json());
+
+let food: { [key: string]: { id: string; labels: string[] }[] } = {};
 let images: { [key: string]: string[] } = {};
 let status: { [key: string]: string } = {};
 
@@ -88,8 +92,17 @@ async function fetchFood(location: string) {
 	querySnapshot.forEach((doc) => {
 		foodArr.push(doc.data().labels);
 	});
-
 	return foodArr.flat();
+}
+
+//fetches the food list with ids for a given location from firebase
+async function fetchFoodWithIds(location: string) {
+	const foodArr: { id: string; labels: string[] }[] = [];
+	const querySnapshot = await getDocs(collection(db, location));
+	querySnapshot.forEach((doc) => {
+		foodArr.push({ id: doc.id, labels: doc.data().labels });
+	});
+	return foodArr;
 }
 
 //fetches the status of any given location from firebase
@@ -116,7 +129,7 @@ const statusChanged = onSnapshot(collection(db, "status"), async () => {
 //Updates the food cache on updated values
 locations.forEach((location) => {
 	const locationSnapshot = onSnapshot(collection(db, location), async () => {
-		food[location] = await fetchFood(location);
+		food[location] = await fetchFoodWithIds(location);
 	});
 });
 
@@ -146,6 +159,13 @@ app.get("/food/:parameter", async (req: Request, res: Response) => {
 	const data = await fetchFood(location);
 
 	food[location] = data;
+	res.json({ food: data });
+});
+
+//gives a list of the food with ids for a given location
+app.get("/food-ids/:parameter", async (req: Request, res: Response) => {
+	const location = req.params.parameter;
+	const data = await fetchFoodWithIds(location);
 	res.json({ food: data });
 });
 
@@ -234,6 +254,34 @@ app.put("/update-status/:parameter", async (req: Request, res: Response) => {
 		console.log("Document added/updated successfully!");
 	} catch (error) {
 		console.error("Error adding/updating document:", error);
+	}
+	res.status(200).json({ success: true });
+});
+
+app.put("/update-food/:parameter", async (req: Request, res: Response) => {
+	try {
+		const { message } = req.body;
+		console.log(message);
+		const location = req.params.parameter;
+		console.log(location);
+		await addDoc(collection(db, location), { labels: message });
+		console.log("Document added/updated successfully!");
+		res.status(200).json({ success: true });
+	} catch (error) {
+		console.error("Error adding/updating document:", error);
+		res.status(500).json({ error: "Failed to update food" });
+	}
+});
+
+// DELETE a food document by id for a given location
+app.delete("/food/:location/:id", async (req: Request, res: Response) => {
+	const { location, id } = req.params;
+	try {
+		await deleteDoc(doc(db, location, id));
+		res.status(200).json({ success: true });
+	} catch (error) {
+		console.error("Error deleting food document:", error);
+		res.status(500).json({ error: "Failed to delete food document" });
 	}
 });
 

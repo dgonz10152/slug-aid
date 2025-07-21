@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../utils/firebase-config";
 import analyzeImage from "@/utils/cloud-vision";
@@ -16,6 +16,8 @@ import {
 	MenuItem,
 	Select,
 	TextField,
+	Snackbar,
+	Alert,
 } from "@mui/material";
 
 async function updateStatus({
@@ -26,6 +28,7 @@ async function updateStatus({
 	location: string;
 }) {
 	try {
+		console.log("start");
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_URL}/update-status/${location}`,
 			{
@@ -37,14 +40,55 @@ async function updateStatus({
 			}
 		);
 
+		console.log("sending try");
+
+		if (!response.ok) {
+			throw new Error(`Error: ${response.statusText}`);
+		}
+
+		console.log("response");
+		const data = await response.json();
+		console.log("Done:", data);
+		return data;
+	} catch (error) {
+		console.error("Error fetching data:", error);
+	}
+}
+
+async function updateFood({
+	message,
+	location,
+}: {
+	message: string[];
+	location: string;
+}) {
+	console.log(message);
+	console.log(location);
+
+	try {
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/update-food/${location}`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ message: message }),
+			}
+		);
+
+		console.log("response");
+		console.log(response);
+
 		if (!response.ok) {
 			throw new Error(`Error: ${response.statusText}`);
 		}
 
 		const data = await response.json();
+		console.log(data);
 		return data;
 	} catch (error) {
-		console.error("Error fetching data:", error);
+		console.error("Error updating food:", error);
 	}
 }
 
@@ -52,9 +96,84 @@ export default function ImageUploader() {
 	// Specify the type as `File | null`
 	const [file, setFile] = useState<File | null>(null);
 	const [uploading, setUploading] = useState<boolean>(false);
+	const [actionLoading, setActionLoading] = useState<boolean>(false); // New loading state
 	const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
 	const [location, setLocation] = useState<string>("the-cove");
 	const [statusText, setStatusText] = useState<string>("");
+	const [foodText, setFoodText] = useState<string>("");
+
+	// Snackbar state
+	const [snackbarOpen, setSnackbarOpen] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+
+	// Food list state
+	const [foodList, setFoodList] = useState<{ id: string; labels: string[] }[]>(
+		[]
+	);
+	const [foodLoading, setFoodLoading] = useState<boolean>(false);
+	const [selectedFoodIds, setSelectedFoodIds] = useState<string[]>([]);
+
+	// Fetch food list for the selected location (with ids)
+	const fetchFoodList = async (loc = location) => {
+		setFoodLoading(true);
+		try {
+			const response = await fetch(
+				`${process.env.NEXT_PUBLIC_API_URL}/food-ids/${loc}`
+			);
+			if (response.ok) {
+				const data = await response.json();
+				setFoodList(Array.isArray(data.food) ? data.food : []);
+				setSelectedFoodIds([]); // Clear selection on refresh
+			} else {
+				setFoodList([]);
+			}
+		} catch {
+			setFoodList([]);
+		} finally {
+			setFoodLoading(false);
+		}
+	};
+
+	// Handle checkbox selection
+	const handleSelectFood = (id: string) => {
+		setSelectedFoodIds((prev) =>
+			prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
+		);
+	};
+
+	// Delete selected food documents
+	const handleDeleteSelected = async () => {
+		setFoodLoading(true);
+		try {
+			await Promise.all(
+				selectedFoodIds.map((id) =>
+					fetch(`${process.env.NEXT_PUBLIC_API_URL}/food/${location}/${id}`, {
+						method: "DELETE",
+					})
+				)
+			);
+			await fetchFoodList();
+		} catch {
+			// Optionally show error
+		} finally {
+			setFoodLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchFoodList();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [location]);
+
+	const handleSnackbarClose = (
+		_event?: React.SyntheticEvent | Event,
+		reason?: string
+	) => {
+		if (reason === "clickaway") {
+			return;
+		}
+		setSnackbarOpen(false);
+	};
 
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
@@ -66,97 +185,237 @@ export default function ImageUploader() {
 		if (!file) return;
 		if (!location) return;
 
+		setActionLoading(true); // Start loading
 		setUploading(true);
 		const storageRef = ref(storage, `${location}/${file.name}`);
 
 		try {
 			await uploadBytes(storageRef, file);
 			const url = await getDownloadURL(storageRef);
-			analyzeImage({ url: url ?? "", location: location ?? "" });
+			await analyzeImage({ url: url ?? "", location: location ?? "" });
 			setUploadedUrl(url);
+			setSnackbarMessage("Image uploaded successfully!");
+			setSnackbarOpen(true);
 			console.log("File Uploaded Successfully");
+			// Refresh food list after scan/upload
+			await fetchFoodList();
 		} catch (error) {
 			console.error("Error uploading the file", error);
 		} finally {
 			setUploading(false);
+			setActionLoading(false); // End loading
 		}
 	};
 
 	return (
-		<Box sx={{ padding: 3, maxWidth: 500, margin: "auto", background: "white" }}>
-			<FormControl fullWidth margin="normal">
-				<InputLabel id="locations-label">Location</InputLabel>
-				<Select
-					labelId="locations-label"
-					value={location}
-					onChange={(e) => setLocation(e.target.value)}
-					label="Location"
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: { xs: "column", md: "row" },
+				gap: 4,
+				padding: 3,
+				maxWidth: 1000,
+				margin: "auto",
+				background: "white",
+			}}
+		>
+			{/* Uploader Section */}
+			<Box sx={{ flex: 1, minWidth: 0 }}>
+				<FormControl fullWidth margin="normal">
+					<InputLabel id="locations-label">Location</InputLabel>
+					<Select
+						labelId="locations-label"
+						value={location}
+						onChange={(e) => setLocation(e.target.value)}
+						label="Location"
+					>
+						{Object.entries(LocationData).map(([key, location]) => (
+							<MenuItem key={key} value={key}>
+								{location.name}
+							</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+
+				<TextField
+					type="file"
+					fullWidth
+					onChange={handleFileChange}
+					margin="normal"
+					variant="outlined"
+					InputLabelProps={{ shrink: true }}
+				/>
+
+				<Button
+					variant="contained"
+					fullWidth
+					color="primary"
+					onClick={handleUpload}
+					disabled={uploading || actionLoading}
+					sx={{ marginTop: 2 }}
 				>
-					{Object.entries(LocationData).map(([key, location]) => (
-						<MenuItem key={key} value={key}>
-							{location.name}
-						</MenuItem>
-					))}
-				</Select>
-			</FormControl>
+					{actionLoading ? (
+						<CircularProgress size={24} color="inherit" />
+					) : (
+						"Upload Image"
+					)}
+				</Button>
 
-			<TextField
-				type="file"
-				fullWidth
-				onChange={handleFileChange}
-				margin="normal"
-				variant="outlined"
-				InputLabelProps={{ shrink: true }}
-			/>
-
-			<Button
-				variant="contained"
-				fullWidth
-				color="primary"
-				onClick={handleUpload}
-				disabled={uploading}
-				sx={{ marginTop: 2 }}
-			>
-				{uploading ? (
-					<CircularProgress size={24} color="inherit" />
-				) : (
-					"Upload Image"
+				{uploadedUrl && (
+					<Box sx={{ marginTop: 3, textAlign: "center" }}>
+						<p>Uploaded image:</p>
+						<Image
+							src={uploadedUrl}
+							alt="Uploaded image"
+							width={300}
+							height={300}
+							layout="responsive"
+						/>
+					</Box>
 				)}
-			</Button>
 
-			{uploadedUrl && (
-				<Box sx={{ marginTop: 3, textAlign: "center" }}>
-					<p>Uploaded image:</p>
-					<Image
-						src={uploadedUrl}
-						alt="Uploaded image"
-						width={300}
-						height={300}
-						layout="responsive"
-					/>
-				</Box>
-			)}
+				<TextField
+					label="Update Status"
+					fullWidth
+					value={statusText}
+					onChange={(e) => setStatusText(e.target.value)}
+					margin="normal"
+					variant="outlined"
+				/>
 
-			<TextField
-				label="Update Status"
-				fullWidth
-				value={statusText}
-				onChange={(e) => setStatusText(e.target.value)}
-				margin="normal"
-				variant="outlined"
-			/>
+				<Button
+					variant="contained"
+					color="secondary"
+					onClick={async () => {
+						setActionLoading(true); // Start loading
+						const result = await updateStatus({
+							message: statusText,
+							location: location,
+						});
+						if (result) {
+							setSnackbarMessage("Status updated successfully!");
+							setSnackbarOpen(true);
+						}
+						setActionLoading(false); // End loading
+					}}
+					fullWidth
+					disabled={actionLoading}
+					sx={{ marginTop: 2 }}
+				>
+					{actionLoading ? (
+						<CircularProgress size={24} color="inherit" />
+					) : (
+						"Update Status"
+					)}
+				</Button>
 
-			<Button
-				variant="contained"
-				color="secondary"
-				onClick={() => {
-					updateStatus({ message: statusText, location: location });
+				{/* New UI area for uploading food */}
+				<TextField
+					label="Update Food (comma separated)"
+					fullWidth
+					value={foodText}
+					onChange={(e) => setFoodText(e.target.value)}
+					margin="normal"
+					variant="outlined"
+				/>
+
+				<Button
+					variant="contained"
+					color="success"
+					onClick={async () => {
+						setActionLoading(true); // Start loading
+						const foodArray = foodText
+							.split(",")
+							.map((f) => f.trim())
+							.filter(Boolean);
+						console.log(foodArray);
+						const result = await updateFood({
+							message: foodArray,
+							location: location,
+						});
+						if (result) {
+							setSnackbarMessage("Food updated successfully!");
+							setSnackbarOpen(true);
+							await fetchFoodList(); // Refresh food list after update
+						}
+						setActionLoading(false); // End loading
+					}}
+					fullWidth
+					disabled={actionLoading}
+					sx={{ marginTop: 2 }}
+				>
+					{actionLoading ? (
+						<CircularProgress size={24} color="inherit" />
+					) : (
+						"Update Food"
+					)}
+				</Button>
+
+				<Snackbar
+					open={snackbarOpen}
+					autoHideDuration={3000}
+					onClose={handleSnackbarClose}
+					anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+				>
+					<Alert
+						onClose={handleSnackbarClose}
+						severity="success"
+						sx={{ width: "100%" }}
+					>
+						{snackbarMessage}
+					</Alert>
+				</Snackbar>
+			</Box>
+
+			{/* Food List Sidebar */}
+			<Box
+				sx={{
+					flex: 1,
+					minWidth: 0,
+					borderLeft: { md: "1px solid #eee" },
+					paddingLeft: { md: 3 },
+					marginTop: { xs: 4, md: 0 },
 				}}
-				fullWidth
-				sx={{ marginTop: 2 }}
 			>
-				Update Status
-			</Button>
+				<h3 style={{ marginTop: 0 }}>Current Food at this Location</h3>
+
+				{foodLoading ? (
+					<CircularProgress size={24} />
+				) : foodList.length === 0 ? (
+					<p>No food items found.</p>
+				) : (
+					<ul style={{ paddingLeft: 20 }}>
+						{foodList.map((item) => (
+							<li
+								key={item.id}
+								style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
+							>
+								<input
+									type="checkbox"
+									checked={selectedFoodIds.includes(item.id)}
+									onChange={() => handleSelectFood(item.id)}
+									style={{ marginRight: 8 }}
+								/>
+								<span style={{ flex: 1 }}>
+									{item.labels && item.labels.length > 0
+										? item.labels.join(", ")
+										: "(no label)"}
+								</span>
+							</li>
+						))}
+					</ul>
+				)}
+				{selectedFoodIds.length > 0 && (
+					<Button
+						variant="contained"
+						color="error"
+						onClick={handleDeleteSelected}
+						sx={{ mb: 2 }}
+					>
+						Delete Selected
+					</Button>
+				)}
+			</Box>
 		</Box>
 	);
 }
