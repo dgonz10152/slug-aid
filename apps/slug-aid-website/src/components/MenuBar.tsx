@@ -104,9 +104,13 @@ export default function MenuBar() {
 						<IconButton sx={{ color: "white" }} onClick={toggleDrawer(true)}>
 							<MenuIcon />
 						</IconButton>
-						<Typography sx={{ color: "white", fontWeight: "bold" }}>
-							SlugAid
-						</Typography>
+						<Link href="/">
+							<Typography
+								sx={{ color: "white", fontWeight: "bold", paddingRight: "8px" }}
+							>
+								SlugAid
+							</Typography>
+						</Link>
 						<Box sx={{ display: "flex", flexDirection: "row", flexGrow: "1" }}>
 							<SearchBar />
 						</Box>

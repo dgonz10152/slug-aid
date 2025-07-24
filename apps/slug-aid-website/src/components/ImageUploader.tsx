@@ -98,7 +98,7 @@ export default function ImageUploader() {
 	const [uploading, setUploading] = useState<boolean>(false);
 	const [actionLoading, setActionLoading] = useState<boolean>(false); // New loading state
 	const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
-	const [location, setLocation] = useState<string>("the-cove");
+	const [location, setLocation] = useState<string>("redwood-free-market");
 	const [statusText, setStatusText] = useState<string>("");
 	const [foodText, setFoodText] = useState<string>("");
 
@@ -112,6 +112,11 @@ export default function ImageUploader() {
 	);
 	const [foodLoading, setFoodLoading] = useState<boolean>(false);
 	const [selectedFoodIds, setSelectedFoodIds] = useState<string[]>([]);
+
+	// Add PDF upload state
+	const [pdfFile, setPdfFile] = useState<File | null>(null);
+	const [pdfUploading, setPdfUploading] = useState<boolean>(false);
+	const [pdfUploadedUrl, setPdfUploadedUrl] = useState<string | null>(null);
 
 	// Fetch food list for the selected location (with ids)
 	const fetchFoodList = async (loc = location) => {
@@ -204,6 +209,52 @@ export default function ImageUploader() {
 		} finally {
 			setUploading(false);
 			setActionLoading(false); // End loading
+		}
+	};
+
+	// PDF file input handler
+	const handlePdfFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+		if (event.target.files && event.target.files[0]) {
+			setPdfFile(event.target.files[0]);
+		}
+	};
+
+	// PDF scan handler
+	const handlePdfScan = async () => {
+		if (!pdfFile) return;
+		if (!location) return;
+
+		setActionLoading(true);
+		setPdfUploading(true);
+		try {
+			const storageRef = ref(storage, `${location}/pdfs/${pdfFile.name}`);
+			await uploadBytes(storageRef, pdfFile);
+			const url = await getDownloadURL(storageRef);
+			setPdfUploadedUrl(url);
+			// Call backend to scan PDF
+			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scan-pdf`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ url, location }),
+			});
+			if (!response.ok) {
+				throw new Error(`Error: ${response.statusText}`);
+			}
+			const data = await response.json();
+			setSnackbarMessage(
+				data.uploaded
+					? `PDF scanned! ${data.uploaded} items added.`
+					: data.message || "PDF scanned."
+			);
+			setSnackbarOpen(true);
+			await fetchFoodList(); // Refresh food list after scan
+		} catch (error) {
+			console.error("Error scanning PDF:", error);
+			setSnackbarMessage("Error scanning PDF");
+			setSnackbarOpen(true);
+		} finally {
+			setPdfUploading(false);
+			setActionLoading(false);
 		}
 	};
 
@@ -350,6 +401,41 @@ export default function ImageUploader() {
 						"Update Food"
 					)}
 				</Button>
+
+				{/* PDF Upload Section */}
+				<TextField
+					type="file"
+					fullWidth
+					inputProps={{ accept: ".pdf" }}
+					onChange={handlePdfFileChange}
+					margin="normal"
+					variant="outlined"
+					InputLabelProps={{ shrink: true }}
+				/>
+				<Button
+					variant="contained"
+					fullWidth
+					color="primary"
+					onClick={handlePdfScan}
+					disabled={pdfUploading || actionLoading || !pdfFile}
+					sx={{ marginTop: 2 }}
+				>
+					{pdfUploading ? (
+						<CircularProgress size={24} color="inherit" />
+					) : (
+						"Scan PDF"
+					)}
+				</Button>
+				{pdfUploadedUrl && (
+					<Box sx={{ marginTop: 2, textAlign: "center" }}>
+						<p>
+							Uploaded PDF:{" "}
+							<a href={pdfUploadedUrl} target="_blank" rel="noopener noreferrer">
+								View PDF
+							</a>
+						</p>
+					</Box>
+				)}
 
 				<Snackbar
 					open={snackbarOpen}

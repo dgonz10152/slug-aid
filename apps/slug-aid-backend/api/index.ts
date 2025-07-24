@@ -3,7 +3,6 @@ import { initializeApp } from "firebase/app";
 import {
 	addDoc,
 	collection,
-	disablePersistentCacheIndexAutoCreation,
 	doc,
 	DocumentData,
 	getDoc,
@@ -15,9 +14,9 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
 import { Request, Response } from "express";
-// const { createServer } = require("@vercel/node");
 
 const express = require("express");
+
 const cors = require("cors");
 
 const app = express();
@@ -242,6 +241,106 @@ app.post("/scan-items", async (req: Request, res: Response) => {
 		res
 			.status(500)
 			.json({ error: "An error occurred while processing your request." });
+	}
+});
+
+//scans a PDF for item descriptions and uploads them to firebase
+app.post("/scan-pdf", async (req: Request, res: Response) => {
+	try {
+		const { url, location } = req.body;
+		if (!url || !location) {
+			return res.status(400).json({ error: "Missing url or location" });
+		}
+
+		// Download the PDF file
+		const axios = require("axios");
+		const pdfBuffer = (await axios.get(url, { responseType: "arraybuffer" }))
+			.data;
+		console.log("PDF buffer size:", pdfBuffer.length);
+
+		// Use @pomgui/pdf-tables-parser to extract tables from the PDF
+		const { PdfDocument } = require("@pomgui/pdf-tables-parser");
+		const pdfDoc = new PdfDocument();
+		await pdfDoc.load(pdfBuffer);
+		// Extract all rows from all tables on all pages
+		const rows: any[][] = [];
+		for (const page of pdfDoc.pages) {
+			for (const table of page.tables) {
+				rows.push(...table.data);
+			}
+		}
+
+		// Find the index of the Description column and the header row index
+		let descriptionColIndex = -1;
+		let headerRowIndex = -1;
+		for (let i = 0; i < rows.length; i++) {
+			const row = rows[i];
+			const idx = row.findIndex(
+				(cell: any) => typeof cell === "string" && /description/i.test(cell)
+			);
+			if (idx !== -1) {
+				descriptionColIndex = idx;
+				headerRowIndex = i;
+				break;
+			}
+		}
+
+		if (descriptionColIndex === -1) {
+			return res
+				.status(200)
+				.json({ message: "No Description column found in PDF." });
+		}
+
+		// List of keywords/phrases to exclude if found anywhere in the description
+		const excludeKeywords = [
+			"techbridge",
+			"copyright",
+			"terms",
+			"condition",
+			"privacy",
+			"policy",
+		];
+
+		// Extract the Description column from each row *after* the header row
+		const itemDescriptions = rows
+			.slice(headerRowIndex + 1)
+			.map((row: any[]) => {
+				const cell = row[descriptionColIndex];
+				return typeof cell === "string" ? cell : undefined;
+			})
+			.filter(
+				(desc: string | undefined): desc is string =>
+					!!desc &&
+					desc.length > 2 &&
+					!excludeKeywords.some((word) => desc.toLowerCase().includes(word))
+			);
+
+		// Clean descriptions: remove whitespace unless the next character is a capital letter
+		const cleanedDescriptions = itemDescriptions.map((desc) =>
+			desc.replace(/\s+(?![A-Z])/g, "")
+		);
+
+		console.log("Extracted Description column:", cleanedDescriptions);
+
+		if (cleanedDescriptions.length === 0) {
+			return res.status(200).json({ message: "No items found in PDF." });
+		}
+
+		for (const desc of cleanedDescriptions) {
+			await uploadLabels(location, [desc]);
+		}
+
+		food[location] = await fetchFoodWithIds(location);
+
+		res.json({
+			uploaded: cleanedDescriptions.length,
+			items: cleanedDescriptions,
+		});
+	} catch (error) {
+		console.error(error);
+		res
+			.status(500)
+			.json({ error: "An error occurred while processing the PDF." });
 	}
 });
 
