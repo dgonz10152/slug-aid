@@ -92,7 +92,11 @@ async function updateFood({
 	}
 }
 
-export default function ImageUploader() {
+interface ImageUploaderProps {
+	signOut: () => void;
+}
+
+export default function ImageUploader({ signOut }: ImageUploaderProps) {
 	// Specify the type as `File | null`
 	const [file, setFile] = useState<File | null>(null);
 	const [uploading, setUploading] = useState<boolean>(false);
@@ -259,249 +263,259 @@ export default function ImageUploader() {
 	};
 
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: { xs: "column", md: "row" },
-				gap: 4,
-				padding: 3,
-				maxWidth: 1000,
-				margin: "auto",
-				background: "white",
-			}}
-		>
-			{/* Uploader Section */}
-			<Box sx={{ flex: 1, minWidth: 0 }}>
-				<FormControl fullWidth margin="normal">
-					<InputLabel id="locations-label">Location</InputLabel>
-					<Select
-						labelId="locations-label"
-						value={location}
-						onChange={(e) => setLocation(e.target.value)}
-						label="Location"
-					>
-						{Object.entries(LocationData).map(([key, location]) => (
-							<MenuItem key={key} value={key}>
-								{location.name}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-
-				<TextField
-					type="file"
-					fullWidth
-					onChange={handleFileChange}
-					margin="normal"
-					variant="outlined"
-					InputLabelProps={{ shrink: true }}
-				/>
-
-				<Button
-					variant="contained"
-					fullWidth
-					color="primary"
-					onClick={handleUpload}
-					disabled={uploading || actionLoading}
-					sx={{ marginTop: 2 }}
-				>
-					{actionLoading ? (
-						<CircularProgress size={24} color="inherit" />
-					) : (
-						"Upload Image"
-					)}
-				</Button>
-
-				{uploadedUrl && (
-					<Box sx={{ marginTop: 3, textAlign: "center" }}>
-						<p>Uploaded image:</p>
-						<Image
-							src={uploadedUrl}
-							alt="Uploaded image"
-							width={300}
-							height={300}
-							layout="responsive"
-						/>
-					</Box>
-				)}
-
-				<TextField
-					label="Update Status"
-					fullWidth
-					value={statusText}
-					onChange={(e) => setStatusText(e.target.value)}
-					margin="normal"
-					variant="outlined"
-				/>
-
-				<Button
-					variant="contained"
-					color="secondary"
-					onClick={async () => {
-						setActionLoading(true); // Start loading
-						const result = await updateStatus({
-							message: statusText,
-							location: location,
-						});
-						if (result) {
-							setSnackbarMessage("Status updated successfully!");
-							setSnackbarOpen(true);
-						}
-						setActionLoading(false); // End loading
-					}}
-					fullWidth
-					disabled={actionLoading}
-					sx={{ marginTop: 2 }}
-				>
-					{actionLoading ? (
-						<CircularProgress size={24} color="inherit" />
-					) : (
-						"Update Status"
-					)}
-				</Button>
-
-				{/* New UI area for uploading food */}
-				<TextField
-					label="Update Food (comma separated)"
-					fullWidth
-					value={foodText}
-					onChange={(e) => setFoodText(e.target.value)}
-					margin="normal"
-					variant="outlined"
-				/>
-
-				<Button
-					variant="contained"
-					color="success"
-					onClick={async () => {
-						setActionLoading(true); // Start loading
-						const foodArray = foodText
-							.split(",")
-							.map((f) => f.trim())
-							.filter(Boolean);
-						console.log(foodArray);
-						const result = await updateFood({
-							message: foodArray,
-							location: location,
-						});
-						if (result) {
-							setSnackbarMessage("Food updated successfully!");
-							setSnackbarOpen(true);
-							await fetchFoodList(); // Refresh food list after update
-						}
-						setActionLoading(false); // End loading
-					}}
-					fullWidth
-					disabled={actionLoading}
-					sx={{ marginTop: 2 }}
-				>
-					{actionLoading ? (
-						<CircularProgress size={24} color="inherit" />
-					) : (
-						"Update Food"
-					)}
-				</Button>
-
-				{/* PDF Upload Section */}
-				<TextField
-					type="file"
-					fullWidth
-					inputProps={{ accept: ".pdf" }}
-					onChange={handlePdfFileChange}
-					margin="normal"
-					variant="outlined"
-					InputLabelProps={{ shrink: true }}
-				/>
-				<Button
-					variant="contained"
-					fullWidth
-					color="primary"
-					onClick={handlePdfScan}
-					disabled={pdfUploading || actionLoading || !pdfFile}
-					sx={{ marginTop: 2 }}
-				>
-					{pdfUploading ? (
-						<CircularProgress size={24} color="inherit" />
-					) : (
-						"Scan PDF"
-					)}
-				</Button>
-				{pdfUploadedUrl && (
-					<Box sx={{ marginTop: 2, textAlign: "center" }}>
-						<p>
-							Uploaded PDF:{" "}
-							<a href={pdfUploadedUrl} target="_blank" rel="noopener noreferrer">
-								View PDF
-							</a>
-						</p>
-					</Box>
-				)}
-
-				<Snackbar
-					open={snackbarOpen}
-					autoHideDuration={3000}
-					onClose={handleSnackbarClose}
-					anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-				>
-					<Alert
-						onClose={handleSnackbarClose}
-						severity="success"
-						sx={{ width: "100%" }}
-					>
-						{snackbarMessage}
-					</Alert>
-				</Snackbar>
-			</Box>
-
-			{/* Food List Sidebar */}
+		<div className="flex flex-col">
 			<Box
 				sx={{
-					flex: 1,
-					minWidth: 0,
-					borderLeft: { md: "1px solid #eee" },
-					paddingLeft: { md: 3 },
-					marginTop: { xs: 4, md: 0 },
+					display: "flex",
+					flexDirection: { xs: "column", md: "row" },
+					gap: 4,
+					padding: 3,
+					maxWidth: 1000,
+					margin: "auto",
+					background: "white",
 				}}
 			>
-				<h3 style={{ marginTop: 0 }}>Current Food at this Location</h3>
+				{/* Uploader Section */}
+				<Box sx={{ flex: 1, minWidth: 0 }}>
+					<FormControl fullWidth margin="normal">
+						<InputLabel id="locations-label">Location</InputLabel>
+						<Select
+							labelId="locations-label"
+							value={location}
+							onChange={(e) => setLocation(e.target.value)}
+							label="Location"
+						>
+							{Object.entries(LocationData).map(([key, location]) => (
+								<MenuItem key={key} value={key}>
+									{location.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 
-				{foodLoading ? (
-					<CircularProgress size={24} />
-				) : foodList.length === 0 ? (
-					<p>No food items found.</p>
-				) : (
-					<ul style={{ paddingLeft: 20 }}>
-						{foodList.map((item) => (
-							<li
-								key={item.id}
-								style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
-							>
-								<input
-									type="checkbox"
-									checked={selectedFoodIds.includes(item.id)}
-									onChange={() => handleSelectFood(item.id)}
-									style={{ marginRight: 8 }}
-								/>
-								<span style={{ flex: 1 }}>
-									{item.labels && item.labels.length > 0
-										? item.labels.join(", ")
-										: "(no label)"}
-								</span>
-							</li>
-						))}
-					</ul>
-				)}
-				{selectedFoodIds.length > 0 && (
+					<TextField
+						type="file"
+						fullWidth
+						onChange={handleFileChange}
+						margin="normal"
+						variant="outlined"
+						InputLabelProps={{ shrink: true }}
+					/>
+
 					<Button
 						variant="contained"
-						color="error"
-						onClick={handleDeleteSelected}
-						sx={{ mb: 2 }}
+						fullWidth
+						color="primary"
+						onClick={handleUpload}
+						disabled={uploading || actionLoading}
+						sx={{ marginTop: 2 }}
 					>
-						Delete Selected
+						{actionLoading ? (
+							<CircularProgress size={24} color="inherit" />
+						) : (
+							"Upload Image"
+						)}
 					</Button>
-				)}
+
+					{uploadedUrl && (
+						<Box sx={{ marginTop: 3, textAlign: "center" }}>
+							<p>Uploaded image:</p>
+							<Image
+								src={uploadedUrl}
+								alt="Uploaded image"
+								width={300}
+								height={300}
+								layout="responsive"
+							/>
+						</Box>
+					)}
+
+					<TextField
+						label="Update Status"
+						fullWidth
+						value={statusText}
+						onChange={(e) => setStatusText(e.target.value)}
+						margin="normal"
+						variant="outlined"
+					/>
+
+					<Button
+						variant="contained"
+						color="secondary"
+						onClick={async () => {
+							setActionLoading(true); // Start loading
+							const result = await updateStatus({
+								message: statusText,
+								location: location,
+							});
+							if (result) {
+								setSnackbarMessage("Status updated successfully!");
+								setSnackbarOpen(true);
+							}
+							setActionLoading(false); // End loading
+						}}
+						fullWidth
+						disabled={actionLoading}
+						sx={{ marginTop: 2 }}
+					>
+						{actionLoading ? (
+							<CircularProgress size={24} color="inherit" />
+						) : (
+							"Update Status"
+						)}
+					</Button>
+
+					{/* New UI area for uploading food */}
+					<TextField
+						label="Update Food (comma separated)"
+						fullWidth
+						value={foodText}
+						onChange={(e) => setFoodText(e.target.value)}
+						margin="normal"
+						variant="outlined"
+					/>
+
+					<Button
+						variant="contained"
+						color="success"
+						onClick={async () => {
+							setActionLoading(true); // Start loading
+							const foodArray = foodText
+								.split(",")
+								.map((f) => f.trim())
+								.filter(Boolean);
+							console.log(foodArray);
+							const result = await updateFood({
+								message: foodArray,
+								location: location,
+							});
+							if (result) {
+								setSnackbarMessage("Food updated successfully!");
+								setSnackbarOpen(true);
+								await fetchFoodList(); // Refresh food list after update
+							}
+							setActionLoading(false); // End loading
+						}}
+						fullWidth
+						disabled={actionLoading}
+						sx={{ marginTop: 2 }}
+					>
+						{actionLoading ? (
+							<CircularProgress size={24} color="inherit" />
+						) : (
+							"Update Food"
+						)}
+					</Button>
+
+					{/* PDF Upload Section */}
+					<TextField
+						type="file"
+						fullWidth
+						inputProps={{ accept: ".pdf" }}
+						onChange={handlePdfFileChange}
+						margin="normal"
+						variant="outlined"
+						InputLabelProps={{ shrink: true }}
+					/>
+					<Button
+						variant="contained"
+						fullWidth
+						color="primary"
+						onClick={handlePdfScan}
+						disabled={pdfUploading || actionLoading || !pdfFile}
+						sx={{ marginTop: 2 }}
+					>
+						{pdfUploading ? (
+							<CircularProgress size={24} color="inherit" />
+						) : (
+							"Scan PDF"
+						)}
+					</Button>
+					{pdfUploadedUrl && (
+						<Box sx={{ marginTop: 2, textAlign: "center" }}>
+							<p>
+								Uploaded PDF:{" "}
+								<a href={pdfUploadedUrl} target="_blank" rel="noopener noreferrer">
+									View PDF
+								</a>
+							</p>
+						</Box>
+					)}
+
+					<Snackbar
+						open={snackbarOpen}
+						autoHideDuration={3000}
+						onClose={handleSnackbarClose}
+						anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+					>
+						<Alert
+							onClose={handleSnackbarClose}
+							severity="success"
+							sx={{ width: "100%" }}
+						>
+							{snackbarMessage}
+						</Alert>
+					</Snackbar>
+				</Box>
+
+				{/* Food List Sidebar */}
+				<Box
+					sx={{
+						flex: 1,
+						minWidth: 0,
+						borderLeft: { md: "1px solid #eee" },
+						paddingLeft: { md: 3 },
+						marginTop: { xs: 4, md: 0 },
+					}}
+				>
+					<h3 style={{ marginTop: 0 }}>Current Food at this Location</h3>
+
+					{foodLoading ? (
+						<CircularProgress size={24} />
+					) : foodList.length === 0 ? (
+						<p>No food items found.</p>
+					) : (
+						<ul style={{ paddingLeft: 20 }}>
+							{foodList.map((item) => (
+								<li
+									key={item.id}
+									style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
+								>
+									<input
+										type="checkbox"
+										checked={selectedFoodIds.includes(item.id)}
+										onChange={() => handleSelectFood(item.id)}
+										style={{ marginRight: 8 }}
+									/>
+									<span style={{ flex: 1 }}>
+										{item.labels && item.labels.length > 0
+											? item.labels.join(", ")
+											: "(no label)"}
+									</span>
+								</li>
+							))}
+						</ul>
+					)}
+					{selectedFoodIds.length > 0 && (
+						<Button
+							variant="contained"
+							color="error"
+							onClick={handleDeleteSelected}
+							sx={{ mb: 2 }}
+						>
+							Delete Selected
+						</Button>
+					)}
+				</Box>
 			</Box>
-		</Box>
+			<Button
+				sx={{ display: "block" }}
+				variant="contained"
+				color="error"
+				onClick={() => signOut()}
+			>
+				Sign Out
+			</Button>
+		</div>
 	);
 }
