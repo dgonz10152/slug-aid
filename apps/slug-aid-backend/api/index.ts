@@ -49,7 +49,7 @@ const db = getFirestore(fireApp);
 
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: process.env.NEXT_PUBLIC_WEBSITE_URL,
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
 	})
