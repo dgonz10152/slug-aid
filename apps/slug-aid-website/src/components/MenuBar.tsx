@@ -40,7 +40,7 @@ function DrawerInfo() {
 		<Box className="w-[80vw] md:w-[30vw] ">
 			<Link href="/">
 				<Typography variant="h5" className="flex justify-center p-5">
-					SlugAid
+					Pantry Pal
 				</Typography>
 			</Link>
 
@@ -108,7 +108,7 @@ export default function MenuBar() {
 							<Typography
 								sx={{ color: "white", fontWeight: "bold", paddingRight: "8px" }}
 							>
-								SlugAid
+								PantryPal
 							</Typography>
 						</Link>
 						<Box sx={{ display: "flex", flexDirection: "row", flexGrow: "1" }}>

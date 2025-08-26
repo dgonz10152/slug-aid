@@ -44,7 +44,7 @@ const BackgroundImage = () => {
 					sx={{ marginTop: "10px" }}
 					className="p-30 pt-20 m-30 z-30"
 				>
-					SlugAid
+					PantryPal
 				</Typography>
 				<Typography variant="h5" component="p" sx={{ marginTop: "10px" }}>
 					Simplifying essential services for Slugs, one step at a time.
