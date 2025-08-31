@@ -50,7 +50,9 @@ function PageTemplate({ config }: PageTemplateProps) {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const response = await fetch(`http://localhost:3001/food/${config.dbName}`);
+				const response = await fetch(
+					`${process.env.NEXT_PUBLIC_API_URL}/food/${config.dbName}`
+				);
 				if (!response.ok) {
 					throw new Error(`Error: ${response.statusText}`);
 				}
@@ -65,7 +67,7 @@ function PageTemplate({ config }: PageTemplateProps) {
 		const fetchImages = async () => {
 			try {
 				const response = await fetch(
-					`http://localhost:3001/images/${config.dbName}`
+					`${process.env.NEXT_PUBLIC_API_URL}/images/${config.dbName}`
 				);
 
 				if (!response.ok) {
