@@ -35,11 +35,16 @@ interface imageData {
 }
 
 interface foodData {
-	food: string[];
+	food: Array<{
+		id: string;
+		labels: string[];
+	}>;
 }
 
 function PageTemplate({ config }: PageTemplateProps) {
-	const [foodList, setFoodList] = useState<string[]>([""]);
+	const [foodList, setFoodList] = useState<
+		Array<{ id: string; labels: string[] }>
+	>([]);
 	const [foodImages, setFoodImages] = useState<string[]>([]);
 
 	useEffect(() => {
@@ -79,9 +84,9 @@ function PageTemplate({ config }: PageTemplateProps) {
 		fetchData();
 	}, [config.dbName]);
 
-	const foodsOffered = foodList.map((food: string, index: number) => (
+	const foodsOffered = foodList.map((foodItem, index) => (
 		<ListItem key={index} sx={{ padding: "0", marginBottom: "-8px" }}>
-			<ListItemText primary={food} />
+			<ListItemText primary={foodItem.labels.join(", ")} />
 		</ListItem>
 	));
 
