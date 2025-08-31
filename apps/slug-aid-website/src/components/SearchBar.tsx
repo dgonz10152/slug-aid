@@ -47,7 +47,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 interface SearchResults {
-	name: string;
+	name: {
+		id: string;
+		labels: string[];
+	};
 	location: string;
 }
 
@@ -84,7 +87,7 @@ export default function SearchBar() {
 		}
 
 		const fuse = new Fuse(foodList, {
-			keys: ["name", "location"],
+			keys: ["name.labels", "location"],
 			threshold: 0.3,
 		});
 
@@ -135,7 +138,7 @@ export default function SearchBar() {
 							onClick={() => setAnchorEl(null)}
 						>
 							<Link href={`/locations/${result.item.location}`}>
-								{result.item.name} ({result.item.location})
+								{result.item.name.labels[0]} ({result.item.location})
 							</Link>
 						</ListItem>
 					))
