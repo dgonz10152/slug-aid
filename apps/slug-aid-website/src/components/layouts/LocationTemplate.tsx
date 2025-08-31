@@ -11,7 +11,10 @@ interface imageData {
 }
 
 interface foodData {
-	food: string[];
+	food: Array<{
+		id: string;
+		labels: string[];
+	}>;
 }
 
 interface statusData {
@@ -29,7 +32,9 @@ interface Config {
 }
 
 export default function LocationTemplate({ config }: Config) {
-	const [foodList, setFoodList] = useState<string[]>([""]);
+	const [foodList, setFoodList] = useState<
+		Array<{ id: string; labels: string[] }>
+	>([]);
 	const [foodImages, setFoodImages] = useState<string[]>([]);
 	const [status, setStatus] = useState<string>("");
 
@@ -157,7 +162,7 @@ export default function LocationTemplate({ config }: Config) {
 				<div className="w-10/12">
 					<h2 className="text-slugBlue text-3xl font-bold">Products Available</h2>
 					<p className="text-slugSecondaryBlue font-semibold text-2xl">
-						{foodList.join(", ")}
+						{foodList.map((food) => food.labels.join(", ")).join(", ")}
 					</p>
 				</div>
 			</div>
