@@ -3,7 +3,7 @@ import "./globals.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "Slug Aid",
+	title: "Pantry Pal",
 	description:
 		"The University of California website for navigating the basic needs facilities.",
 };
