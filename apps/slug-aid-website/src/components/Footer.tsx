@@ -1,4 +1,4 @@
-import { Instagram, Facebook, YouTube } from "@mui/icons-material";
+import { Instagram } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from "@mui/material";
 import Link from "next/link";
 
@@ -45,26 +45,6 @@ function LinkSection() {
 						>
 							Instagram <Instagram sx={{ color: "white" }} />
 						</a>
-						<a
-							target="_blank"
-							href={"https://www.facebook.com/ucscbasicneeds/"}
-							className="text-base underline font-bold h-6 flex"
-						>
-							Facebook
-							<div className="w-7">
-								<Facebook sx={{ color: "white" }} />
-							</div>
-						</a>
-						<a
-							target="_blank"
-							href={"https://www.youtube.com/channel/UC21ian0e0wC8E-dq8yAxR-w"}
-							className="text-base underline font-bold h-6 flex"
-						>
-							Youtube
-							<div className="w-7">
-								<YouTube sx={{ color: "white" }} />
-							</div>
-						</a>
 					</div>
 				</div>
 			</div>
@@ -77,18 +57,6 @@ function LinkSection() {
 							className="text-base underline font-bold"
 						>
 							basicnds@ucsc.edu
-						</Link>
-						<Link
-							href={"mailto:ceja@ucsc.edu"}
-							className="text-base underline font-bold"
-						>
-							CEJA@ucsc.edu
-						</Link>
-						<Link
-							href={"tel:831-439-4446"}
-							className="text-base underline font-bold h-6 flex"
-						>
-							831-459-4446
 						</Link>
 					</div>
 				</div>
