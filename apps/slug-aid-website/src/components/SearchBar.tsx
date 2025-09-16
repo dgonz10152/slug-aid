@@ -87,7 +87,7 @@ export default function SearchBar() {
 		}
 
 		const fuse = new Fuse(foodList, {
-			keys: ["name.labels", "location"],
+			keys: ["name.labels[0]", "location"],
 			threshold: 0.3,
 		});
 

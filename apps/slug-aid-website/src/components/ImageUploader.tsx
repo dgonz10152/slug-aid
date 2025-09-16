@@ -109,6 +109,9 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 	// Snackbar state
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+		"success"
+	);
 
 	// Food list state
 	const [foodList, setFoodList] = useState<{ id: string; labels: string[] }[]>(
@@ -186,7 +189,17 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
-			setFile(event.target.files[0]);
+			const selectedFile = event.target.files[0];
+			// Check if file is an image
+			if (selectedFile.type.startsWith("image/")) {
+				setFile(selectedFile);
+			} else {
+				setSnackbarMessage("Please select an image file (JPG, PNG, GIF, etc.)");
+				setSnackbarSeverity("error");
+				setSnackbarOpen(true);
+				// Clear the input
+				event.target.value = "";
+			}
 		}
 	};
 
@@ -204,6 +217,7 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 			await analyzeImage({ url: url ?? "", location: location ?? "" });
 			setUploadedUrl(url);
 			setSnackbarMessage("Image uploaded successfully!");
+			setSnackbarSeverity("success");
 			setSnackbarOpen(true);
 			console.log("File Uploaded Successfully");
 			// Refresh food list after scan/upload
@@ -219,7 +233,17 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 	// PDF file input handler
 	const handlePdfFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
-			setPdfFile(event.target.files[0]);
+			const selectedFile = event.target.files[0];
+			// Check if file is a PDF
+			if (selectedFile.type === "application/pdf") {
+				setPdfFile(selectedFile);
+			} else {
+				setSnackbarMessage("Please select a PDF file");
+				setSnackbarSeverity("error");
+				setSnackbarOpen(true);
+				// Clear the input
+				event.target.value = "";
+			}
 		}
 	};
 
@@ -250,11 +274,13 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 					? `PDF scanned! ${data.uploaded} items added.`
 					: data.message || "PDF scanned."
 			);
+			setSnackbarSeverity("success");
 			setSnackbarOpen(true);
 			await fetchFoodList(); // Refresh food list after scan
 		} catch (error) {
 			console.error("Error scanning PDF:", error);
 			setSnackbarMessage("Error scanning PDF");
+			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
 		} finally {
 			setPdfUploading(false);
@@ -299,6 +325,7 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 						onChange={handleFileChange}
 						margin="normal"
 						variant="outlined"
+						inputProps={{ accept: "image/*" }}
 						InputLabelProps={{ shrink: true }}
 					/>
 
@@ -350,6 +377,7 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 							});
 							if (result) {
 								setSnackbarMessage("Status updated successfully!");
+								setSnackbarSeverity("success");
 								setSnackbarOpen(true);
 							}
 							setActionLoading(false); // End loading
@@ -385,15 +413,41 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 								.map((f) => f.trim())
 								.filter(Boolean);
 							console.log(foodArray);
-							const result = await updateFood({
-								message: foodArray,
-								location: location,
-							});
-							if (result) {
-								setSnackbarMessage("Food updated successfully!");
+
+							// Upload each food item individually
+							let successCount = 0;
+							let errorCount = 0;
+
+							for (const foodItem of foodArray) {
+								try {
+									const result = await updateFood({
+										message: [foodItem], // Send as single item array
+										location: location,
+									});
+									if (result) {
+										successCount++;
+									} else {
+										errorCount++;
+									}
+								} catch (error) {
+									console.error(`Error uploading ${foodItem}:`, error);
+									errorCount++;
+								}
+							}
+
+							if (successCount > 0) {
+								setSnackbarMessage(
+									`Food updated successfully! ${successCount} items added${errorCount > 0 ? `, ${errorCount} failed` : ""}`
+								);
+								setSnackbarSeverity("success");
 								setSnackbarOpen(true);
 								await fetchFoodList(); // Refresh food list after update
+							} else {
+								setSnackbarMessage("Failed to update food items");
+								setSnackbarSeverity("error");
+								setSnackbarOpen(true);
 							}
+
 							setActionLoading(false); // End loading
 						}}
 						fullWidth
@@ -450,7 +504,7 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 					>
 						<Alert
 							onClose={handleSnackbarClose}
-							severity="success"
+							severity={snackbarSeverity}
 							sx={{ width: "100%" }}
 						>
 							{snackbarMessage}
@@ -508,14 +562,21 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 					)}
 				</Box>
 			</Box>
-			<Button
-				sx={{ display: "block" }}
-				variant="contained"
-				color="error"
-				onClick={() => signOut()}
-			>
-				Sign Out
-			</Button>
+			<div style={{ padding: "20px", textAlign: "center" }}>
+				<Button
+					sx={{
+						display: "block",
+						margin: "0 auto",
+						maxWidth: "200px",
+						width: "100%",
+					}}
+					variant="contained"
+					color="error"
+					onClick={() => signOut()}
+				>
+					Sign Out
+				</Button>
+			</div>
 		</div>
 	);
 }

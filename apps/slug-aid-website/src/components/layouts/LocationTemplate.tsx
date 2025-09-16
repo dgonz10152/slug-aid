@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import Footer from "../Footer";
 import { Dialog, DialogContent } from "@mui/material";
+import FoodLabel from "../FoodLabel";
 
 interface imageData {
 	urls: string[];
@@ -160,10 +161,16 @@ export default function LocationTemplate({ config }: Config) {
 			{/* Product Labels */}
 			<div className="bg-white flex justify-center pt-5">
 				<div className="w-10/12">
-					<h2 className="text-slugBlue text-3xl font-bold">Products Available</h2>
-					<p className="text-slugSecondaryBlue font-semibold text-2xl">
-						{foodList.map((food) => food.labels.join(", ")).join(", ")}
-					</p>
+					<h2 className="text-slugBlue text-3xl font-bold pb-2">
+						Products Available
+					</h2>
+					<div className="text-slugSecondaryBlue font-semibold text-2xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+						{foodList
+							.sort((a, b) => a.labels.join(", ").length - b.labels.join(", ").length)
+							.map((food) => (
+								<FoodLabel key={food.id} label={food.labels.join(", ")} />
+							))}
+					</div>
 				</div>
 			</div>
 			{/* Product Images */}
@@ -180,38 +187,46 @@ export default function LocationTemplate({ config }: Config) {
 			<div className="py-12">
 				<div className="bg-white flex justify-center">
 					<div className="w-10/12">
-						<h2 className="text-slugBlue text-3xl font-bold">Facility Hours</h2>
+						<h2 className="text-slugBlue text-3xl font-bold pb-2">Facility Hours</h2>
 					</div>
 				</div>
 				<div className="bg-white flex justify-center text-slugSecondaryBlue font-semibold">
-					<div className="w-10/12 flex flex-row">
-						<div className="text-2xl">
-							<h3>Monday:</h3>
-							<h3>Tuesday:</h3>
-							<h3>Wednesday:</h3>
-							<h3>Thursday:</h3>
-							<h3>Friday:</h3>
-							<h3>Saturday:</h3>
-							<h3>Sunday:</h3>
-						</div>
-						<div className="flex flex-row-reverse md:flex-row md: px-10 flex-grow">
-							<div className="text-right md:text-left text-2xl">
-								<h3>{config.hours.monday}</h3>
-								<h3>{config.hours.tuesday}</h3>
-								<h3>{config.hours.wednesday}</h3>
-								<h3>{config.hours.thursday}</h3>
-								<h3>{config.hours.friday}</h3>
-								<h3>{config.hours.saturday}</h3>
-								<h3>{config.hours.sunday}</h3>
-							</div>
-						</div>
+					<div className="w-10/12 grid grid-cols-2 gap-x-10 gap-y-2">
+						<h3 className="text-2xl">Monday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.monday}
+						</h3>
+						<h3 className="text-2xl">Tuesday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.tuesday}
+						</h3>
+						<h3 className="text-2xl">Wednesday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.wednesday}
+						</h3>
+						<h3 className="text-2xl">Thursday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.thursday}
+						</h3>
+						<h3 className="text-2xl">Friday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.friday}
+						</h3>
+						<h3 className="text-2xl">Saturday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.saturday}
+						</h3>
+						<h3 className="text-2xl">Sunday:</h3>
+						<h3 className="text-right md:text-left text-2xl">
+							{config.hours.sunday}
+						</h3>
 					</div>
 				</div>
 			</div>
 			{/* About */}
 			<div className="bg-white flex justify-center py-12">
 				<div className="w-10/12">
-					<h2 className="text-slugBlue text-3xl font-bold">About</h2>
+					<h2 className="text-slugBlue text-3xl font-bold pb-2">About</h2>
 					<h3 className="text-slugSecondaryBlue font-semibold text-2xl">
 						{config.about}
 					</h3>
