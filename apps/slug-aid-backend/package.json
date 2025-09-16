@@ -14,7 +14,6 @@
 	"dependencies": {
 		"@google-cloud/storage": "^7.16.0",
 		"@google-cloud/vision": "^4.3.2",
-		"@pomgui/pdf-tables-parser": "^0.1.0",
 		"@vercel/node": "^5.1.10",
 		"axios": "^1.10.0",
 		"cors": "^2.8.5",
@@ -22,7 +21,7 @@
 		"express": "^4.21.2",
 		"firebase": "^11.2.0",
 		"nodemon": "^3.1.9",
-		"pdfjs-dist": "^2.6.347",
+		"pdf-parse": "^1.1.1",
 		"tslib": "^2.8.1"
 	},
 	"devDependencies": {

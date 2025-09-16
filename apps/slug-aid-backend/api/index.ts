@@ -155,7 +155,7 @@ app.get("/food/:parameter", async (req: Request, res: Response) => {
 		return;
 	}
 
-	const data = await fetchFood(location);
+	const data = await fetchFoodWithIds(location);
 
 	food[location] = data;
 	res.json({ food: data });
@@ -258,83 +258,38 @@ app.post("/scan-pdf", async (req: Request, res: Response) => {
 			.data;
 		console.log("PDF buffer size:", pdfBuffer.length);
 
-		// Use @pomgui/pdf-tables-parser to extract tables from the PDF
-		const { PdfDocument } = require("@pomgui/pdf-tables-parser");
-		const pdfDoc = new PdfDocument();
-		await pdfDoc.load(pdfBuffer);
-		// Extract all rows from all tables on all pages
-		const rows: any[][] = [];
-		for (const page of pdfDoc.pages) {
-			for (const table of page.tables) {
-				rows.push(...table.data);
-			}
+		// Use pdf-parse to extract text content from the PDF
+		const pdfParse = require("pdf-parse");
+		const pdfData = await pdfParse(pdfBuffer);
+		const text = pdfData.text;
+		console.log("PDF text length:", text.length);
+
+		// Split text into lines and clean them
+		const lines = text
+			.split("\n")
+			.map((line: string) => line.trim())
+			.filter((line: string) => line.length > 0);
+
+		// Extract item descriptions using pattern matching
+		const itemDescriptions = extractItemDescriptions(lines);
+
+		console.log("Extracted item descriptions:", itemDescriptions);
+
+		if (itemDescriptions.length === 0) {
+			return res.status(200).json({ message: "No food items found in PDF." });
 		}
 
-		// Find the index of the Description column and the header row index
-		let descriptionColIndex = -1;
-		let headerRowIndex = -1;
-		for (let i = 0; i < rows.length; i++) {
-			const row = rows[i];
-			const idx = row.findIndex(
-				(cell: any) => typeof cell === "string" && /description/i.test(cell)
-			);
-			if (idx !== -1) {
-				descriptionColIndex = idx;
-				headerRowIndex = i;
-				break;
-			}
-		}
-
-		if (descriptionColIndex === -1) {
-			return res
-				.status(200)
-				.json({ message: "No Description column found in PDF." });
-		}
-
-		// List of keywords/phrases to exclude if found anywhere in the description
-		const excludeKeywords = [
-			"techbridge",
-			"copyright",
-			"terms",
-			"condition",
-			"privacy",
-			"policy",
-		];
-
-		// Extract the Description column from each row *after* the header row
-		const itemDescriptions = rows
-			.slice(headerRowIndex + 1)
-			.map((row: any[]) => {
-				const cell = row[descriptionColIndex];
-				return typeof cell === "string" ? cell : undefined;
-			})
-			.filter(
-				(desc: string | undefined): desc is string =>
-					!!desc &&
-					desc.length > 2 &&
-					!excludeKeywords.some((word) => desc.toLowerCase().includes(word))
-			);
-
-		// Clean descriptions: remove whitespace unless the next character is a capital letter
-		const cleanedDescriptions = itemDescriptions.map((desc) =>
-			desc.replace(/\s+(?![A-Z])/g, "")
-		);
-
-		console.log("Extracted Description column:", cleanedDescriptions);
-
-		if (cleanedDescriptions.length === 0) {
-			return res.status(200).json({ message: "No items found in PDF." });
-		}
-
-		for (const desc of cleanedDescriptions) {
+		// Upload each item description
+		for (const desc of itemDescriptions) {
 			await uploadLabels(location, [desc]);
 		}
 
+		// Update the food cache
 		food[location] = await fetchFoodWithIds(location);
 
 		res.json({
-			uploaded: cleanedDescriptions.length,
-			items: cleanedDescriptions,
+			uploaded: itemDescriptions.length,
+			items: itemDescriptions,
 		});
 	} catch (error) {
 		console.error(error);
@@ -343,6 +298,198 @@ app.post("/scan-pdf", async (req: Request, res: Response) => {
 			.json({ error: "An error occurred while processing the PDF." });
 	}
 });
+
+function extractItemDescriptions(lines: string[]): string[] {
+	const descriptions: string[] = [];
+
+	// Look for lines that start with item numbers (6 digits) followed by description
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+
+		// Pattern 1: Line starts with 6-digit item number (like "120019")
+		const itemNumberMatch = line.match(/^(\d{6})\s+(.+)/);
+		if (itemNumberMatch) {
+			let description = itemNumberMatch[2];
+
+			// Clean up the description by removing everything after quantity/unit info
+			description = cleanDescription(description);
+
+			if (description && description.length > 2) {
+				descriptions.push(description);
+			}
+			continue;
+		}
+
+		// Pattern 2: Multi-line format where item number is on one line and description on next
+		const standaloneItemNumber = line.match(/^\d{6}$/);
+		if (standaloneItemNumber && i + 1 < lines.length) {
+			let description = lines[i + 1];
+			description = cleanDescription(description);
+
+			if (description && description.length > 2) {
+				descriptions.push(description);
+			}
+			continue;
+		}
+	}
+
+	// If no structured format found, look for food-related keywords as fallback
+	if (descriptions.length === 0) {
+		return extractFoodItemsFallback(lines);
+	}
+
+	return descriptions;
+}
+
+function cleanDescription(rawDescription: string): string {
+	let description = rawDescription;
+
+	// First, remove any leading item numbers (6 digits)
+	description = description.replace(/^\d{6}/, "").trim();
+
+	// Remove common prefixes (without requiring space after)
+	description = description
+		.replace(/^(Veg|SC|Bevg|Bread|Raleys)/i, "") // Remove category prefixes
+		.trim();
+
+	// Stop at quantity indicators (numbers followed by units or slashes)
+	const stopPatterns = [
+		/\d+\/\d+/, // "12/16", "24/1"
+		/\d+\s+(oz|lb|lbs|case|each)/i, // "16 oz", "1 lb"
+		/\d+\s+\d+/, // "120 0"
+		/\b(LB|CASE|EACH)\b/i, // Unit indicators
+	];
+
+	for (const pattern of stopPatterns) {
+		const match = description.match(pattern);
+		if (match) {
+			description = description.substring(0, match.index).trim();
+			break;
+		}
+	}
+
+	// Remove trailing numbers and common suffixes
+	description = description
+		.replace(/\s+\d+$/, "") // Remove trailing numbers
+		.replace(/\s+(dry|refrigerated|food)$/i, "") // Remove storage type
+		.trim();
+
+	// Normalize spacing and clean up
+	description = description.replace(/\s+/g, " ").trim();
+
+	// Handle specific cases where text got concatenated
+	if (description.includes("Spagehtti")) {
+		description = description.replace("Pasta Spagehtti", "Pasta Spaghetti");
+	}
+
+	return description;
+}
+
+function extractFoodItemsFallback(lines: string[]): string[] {
+	const descriptions: string[] = [];
+
+	// Food-related keywords for fallback detection
+	const foodKeywords = [
+		"kale",
+		"cucumber",
+		"peanut butter",
+		"beans",
+		"pasta",
+		"spaghetti",
+		"tomato",
+		"sauce",
+		"tuna",
+		"onion",
+		"potato",
+		"turmeric",
+		"lemonade",
+		"bread",
+		"chili",
+		"rice",
+		"green beans",
+		"mushroom",
+		"vegetable",
+		"veg",
+	];
+
+	// Headers and non-food terms to exclude
+	const excludeTerms = [
+		"item",
+		"description",
+		"order",
+		"qty",
+		"accepted",
+		"uom",
+		"gross",
+		"weight",
+		"unit",
+		"price",
+		"packaging",
+		"type",
+		"pack",
+		"size",
+		"handling",
+		"requirements",
+		"shopping",
+		"cart",
+		"summary",
+		"total",
+		"due",
+		"line",
+		"items",
+		"cube",
+		"techbridge",
+		"copyright",
+		"terms",
+		"condition",
+		"privacy",
+		"policy",
+		"appointment",
+		"reference",
+		"number",
+		"pickup",
+		"delivery",
+		"deliver",
+		"date",
+		"time",
+		"comment",
+		"agency",
+		"express",
+		"aws",
+		"cloud",
+		"https",
+		"www",
+		"agencyexpress",
+	];
+
+	for (const line of lines) {
+		// Skip if line contains exclude terms
+		if (
+			excludeTerms.some((term) => line.toLowerCase().includes(term.toLowerCase()))
+		) {
+			continue;
+		}
+
+		// Skip if line is mostly numbers or currency
+		if (/^\d+(\.\d{2})?$/.test(line) || /\$\d+\.\d{2}/.test(line)) {
+			continue;
+		}
+
+		// Check if line contains food keywords
+		if (
+			foodKeywords.some((keyword) =>
+				line.toLowerCase().includes(keyword.toLowerCase())
+			)
+		) {
+			const cleaned = cleanDescription(line);
+			if (cleaned && cleaned.length > 2) {
+				descriptions.push(cleaned);
+			}
+		}
+	}
+
+	return descriptions;
+}
 
 app.put("/update-status/:parameter", async (req: Request, res: Response) => {
 	try {
