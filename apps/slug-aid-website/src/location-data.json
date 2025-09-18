@@ -3,7 +3,7 @@
 		"name": "Redwood Free Market",
 		"dbName": "redwood-free-market",
 		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fredwood%20free%20market.jpg?alt=media&token=11e2010c-133e-4306-bfef-d4d836c50bdb",
-		"about": "The Redwood Free Market at UC Santa Cruz is a student-run, donation-based thrift initiative that promotes sustainability and mutual aid. Located in the Redwood Building at College Eight (Rachel Carson College), it offers free clothing, school supplies, and household items to students in need. The market operates on a \"take what you need, donate what you can\" philosophy, reducing waste and fostering community support.",
+		"about": "Also known as the Basic Needs Hub, Redwood Free Market (RFM) is here to help reduce basic needs insecurity by offering free access to nutritious food and connecting students with valuable campus and community resources. Students can access a wide range of essentials, including fresh produce, dry goods, personal care items, CalFresh application support, meal kits, diaper assistance, and more.",
 		"dynamicLocation": false,
 		"location": {
 			"lat": 36.99166244879438,
@@ -23,7 +23,7 @@
 		"name": "Produce Pop Up",
 		"dbName": "produce-pop-up",
 		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2FProduce%20Pop%20Up.png?alt=media&token=bab86a1d-7cc9-4437-ae9e-65e0d7d6abbf",
-		"about": "Low-cost produce stand with fresh fruits & veggies from the UCSC Farm & Santa Cruz Farmers' Market. The Produce Pop-Up aims to increase access to fresh, nutritious food for students and the campus community.Cash, check, card & EBT accepted.",
+		"about": "Produce Pop-Up is a twice-weekly organic farmstand open to all members of the UC Santa Cruz community. The program is dedicated to increasing access to fresh, healthy, and affordable organic produce, with offerings sourced from the UCSC Farm and other local organic growers.",
 		"dynamicLocation": false,
 		"location": {
 			"lat": 36.99589,
@@ -43,7 +43,7 @@
 		"name": "Cowell Coffee Shop",
 		"dbName": "cowell-coffee-shop",
 		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Fcowell.png?alt=media&token=365a8161-a1b8-4cc5-8f5b-16233f237276",
-		"about": "Cowell Coffee Shop is a student-run cafe non-transactional designed to increase student food security. Offerings include premade food, fresh pressed juices, coffee, food recovery items from our campus and community partners, and more!",
+		"about": "Cowell Coffee Shop is a non-transactional, student-run café committed to food justice, mutual aid, and hands-on learning. The café fosters a deeper understanding of food sovereignty through student leaders who connect their passion for food to broader issues of economic justice and community empowerment. Enjoy free coffee, salads, soups, bagels, baked goods, and other seasonal and culturally relevant dishes—available to all UCSC students.",
 		"dynamicLocation": false,
 		"location": {
 			"lat": 36.99723714376621,
@@ -83,7 +83,7 @@
 		"name": "Terry Freitas Commons",
 		"dbName": "terry-freitas-commons",
 		"image": "https://firebasestorage.googleapis.com/v0/b/slugaid-562a4.firebasestorage.app/o/images%2Ftfc.jpg?alt=media&token=9bea9081-aaf0-44ce-8602-96b7202051bc",
-		"about": "Terry Freitas Commons (TFC) is a fully student-led organization that serves as a lounge and food pantry for all students. TFC also provides a welcoming space for people to study, have meetings, and socialize through playing pool, piano, and games\nTFC has had a long legacy as an organization that is by the students and for the students. It was created to provide a welcoming space for students to connect, play pool, express themselves, explore social justice on a global level, and study. \nThroughout the academic year, a number of programs are held at TFC, whether they're hosted by the student team or collaborations with other organizations to provide programming that reflects the themes of College Nine-International and Global Perspectives and John R. Lewis College-Social Justice and Community. \nDuring the day, Terry Freitas Commons is open as a lounge and study area. We hope that residents find a home away from their rooms at Terry Freitas Commons.\nHours, events, and all information are updated on TFC’s Instagram, @tfc_ucsc.",
+		"about": "A satellite location of Redwood Free Market, Terry Freitas Commons (TFC) provides free groceries and essentials to support food access for students on the east side of campus.",
 		"dynamicLocation": false,
 		"location": {
 			"lat": 37.00053964112156,

@@ -6,6 +6,7 @@ import locationData from "@/location-data.json";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import FoodIcon from "@/components/FoodIcon";
+import FoodIconDesaturated from "@/components/FoodIconDesaturated";
 import {
 	Button,
 	Dialog,
@@ -61,13 +62,18 @@ const App = () => {
 				<DialogContent>
 					<Typography>{currentLocation.about}</Typography>
 				</DialogContent>
-				<Button
-					sx={{ margin: 3, font: "lato" }}
-					variant="contained"
-					onClick={() => router.push(`/locations/${currentLocation.dbName}`)}
-				>
-					More
-				</Button>
+
+				{currentLocation.dbName == "redwood-free-market" ? (
+					<Button
+						sx={{ margin: 3, font: "lato" }}
+						variant="contained"
+						onClick={() => router.push(`/locations/${currentLocation.dbName}`)}
+					>
+						More
+					</Button>
+				) : (
+					<></>
+				)}
 			</Dialog>
 		);
 	}
@@ -96,7 +102,11 @@ const App = () => {
 									handleClick({ location: facility.dbName } as LocationInterface)
 								}
 							>
-								<FoodIcon style={{ width: "30px", height: "30px" }} />
+								{facility.dbName === "redwood-free-market" ? (
+									<FoodIcon style={{ width: "30px", height: "30px" }} />
+								) : (
+									<FoodIconDesaturated style={{ width: "30px", height: "30px" }} />
+								)}
 							</AdvancedMarker>
 						);
 					})}
