@@ -19,7 +19,10 @@ interface foodData {
 }
 
 interface statusData {
-	status: string;
+	status: {
+		message: string;
+		timestamp: string;
+	};
 }
 
 interface Config {
@@ -37,7 +40,7 @@ export default function LocationTemplate({ config }: Config) {
 		Array<{ id: string; labels: string[] }>
 	>([]);
 	const [foodImages, setFoodImages] = useState<string[]>([]);
-	const [status, setStatus] = useState<string>("");
+	const [status, setStatus] = useState<{ message: string; timestamp: string } | null>(null);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -138,10 +141,19 @@ export default function LocationTemplate({ config }: Config) {
 				<h1>{config.name}</h1>
 			</div>
 			{/* Warning bar */}
-			{status && status != "" ? (
-				<div className="text-white flex w-full py-1 bg-[#E56262] justify-center">
-					<div className="w-10/12 flex justify-center text-xl font-black">
-						<p>{status}</p>
+			{status && status.message ? (
+				<div className="text-white flex w-full py-2 bg-[#E56262] justify-center">
+					<div className="w-10/12 flex flex-col items-center">
+						<p className="text-xl font-black">{status.message}</p>
+						{status.timestamp && (
+							<p className="text-sm opacity-80">
+								Updated:{" "}
+								{new Date(status.timestamp).toLocaleString(undefined, {
+									dateStyle: "medium",
+									timeStyle: "short",
+								})}
+							</p>
+						)}
 					</div>
 				</div>
 			) : (

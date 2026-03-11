@@ -46,7 +46,7 @@ function DrawerInfo() {
 
 			<Divider />
 			<List className="p-5 m-2">
-				<ul>
+				<ul key="home">
 					<ListItemButton href="/" className="text-black">
 						<ListItemIcon>
 							<HomeIcon />
@@ -54,7 +54,7 @@ function DrawerInfo() {
 						HOME
 					</ListItemButton>
 				</ul>
-				<ul>
+				<ul key="map">
 					<ListItemButton href="/map" className="text-black">
 						<ListItemIcon>
 							<LocationOnIcon />
@@ -82,7 +82,7 @@ function DrawerInfo() {
 						</ul>
 					);
 				})}
-				<ul>
+				<ul key="about">
 					<ListItemButton href="/about" className="text-black">
 						<ListItemIcon>
 							<InfoIcon />

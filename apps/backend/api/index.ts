@@ -60,7 +60,7 @@ app.use(express.json());
 
 let food: { [key: string]: { id: string; labels: string[] }[] } = {};
 let images: { [key: string]: string[] } = {};
-let status: { [key: string]: string } = {};
+let status: { [key: string]: { message: string; timestamp: string } } = {};
 
 //uploads food labels to firebase
 async function uploadLabels(location: string, labels: string[]) {
@@ -84,16 +84,6 @@ async function fetchImages(location: string) {
 	return urls;
 }
 
-//fetches the food list of given location from firebase
-async function fetchFood(location: string) {
-	const foodArr: DocumentData = [];
-	const querySnapshot = await getDocs(collection(db, location));
-	querySnapshot.forEach((doc) => {
-		foodArr.push(doc.data().labels);
-	});
-	return foodArr.flat();
-}
-
 //fetches the food list with ids for a given location from firebase
 async function fetchFoodWithIds(location: string) {
 	const foodArr: { id: string; labels: string[] }[] = [];
@@ -106,13 +96,14 @@ async function fetchFoodWithIds(location: string) {
 
 //fetches the status of any given location from firebase
 async function fetchStatus(location: string) {
-	let status = "";
+	let result = { message: "", timestamp: "" };
 	const queryDoc = await getDoc(doc(db, "status", location));
 
 	if (queryDoc.exists()) {
-		status = queryDoc.data().status;
+		result.message = queryDoc.data().status ?? "";
+		result.timestamp = queryDoc.data().timestamp ?? "";
 	}
-	return status;
+	return result;
 }
 
 //Updates the status cache on updated values
@@ -188,11 +179,9 @@ app.get("/all-food", async (req: Request, res: Response) => {
 
 	if (Object.keys(food).length === 0) {
 		// Fetch all locations in parallel and wait for them to complete
-		const results = await Promise.all(
+		await Promise.all(
 			locations.map(async (location) => {
-				const data = await fetchFood(location);
-				food[location] = data;
-				return { location, data };
+				food[location] = await fetchFoodWithIds(location);
 			}),
 		);
 	}
@@ -495,8 +484,9 @@ app.put("/update-status/:parameter", async (req: Request, res: Response) => {
 	try {
 		const { message } = JSON.parse(req.headers.body as string);
 		const location = req.params.parameter;
+		const timestamp = new Date().toISOString();
 		console.log(location);
-		await setDoc(doc(db, "status", location), { status: message });
+		await setDoc(doc(db, "status", location), { status: message, timestamp });
 		console.log("Document added/updated successfully!");
 	} catch (error) {
 		console.error("Error adding/updating document:", error);

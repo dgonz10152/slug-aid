@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import backgroundImage from "@/assets/BackgroundImage.jpg";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import MenuBar from "@/components/MenuBar";
@@ -12,22 +14,28 @@ const BackgroundImage = () => {
 			sx={{
 				height: "93vh",
 				width: "100%",
-				backgroundImage: `url('https://firebasestorage.googleapis.com/v0/b/acmhacks-2024.appspot.com/o/images%2FCenter%20for%20Agroecology%20Farmstand2.jpg?alt=media&token=9d0d22d6-8b08-47c4-8ed7-bfa39d44a6bb')`, // Replace with your image path
-				backgroundSize: "cover",
-				backgroundPosition: "center",
 				position: "relative",
-				"&::before": {
-					content: '""',
+				overflow: "hidden",
+			}}
+		>
+			<Image
+				src={backgroundImage}
+				alt="Center for Agroecology Farmstand"
+				fill
+				priority
+				style={{ objectFit: "cover", objectPosition: "center" }}
+			/>
+			<Box
+				sx={{
 					position: "absolute",
 					top: 0,
 					left: 0,
 					width: "100%",
 					height: "100%",
-					backgroundColor: "rgba(0, 0, 0, 0.5)", // This adds a semi-transparent overlay
+					backgroundColor: "rgba(0, 0, 0, 0.5)",
 					zIndex: 1,
-				},
-			}}
-		>
+				}}
+			/>
 			{/* Content goes here */}
 			<Box
 				sx={{
@@ -65,11 +73,9 @@ const BackgroundImage = () => {
 
 export default function Home() {
 	return (
-		<>
-			<div>
-				<MenuBar />
-				<BackgroundImage />
-			</div>
-		</>
+		<div style={{ height: "100vh", overflow: "hidden" }}>
+			<MenuBar />
+			<BackgroundImage />
+		</div>
 	);
 }
