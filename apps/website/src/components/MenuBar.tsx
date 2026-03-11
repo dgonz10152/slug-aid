@@ -87,7 +87,7 @@ function DrawerInfo() {
 						<ListItemIcon>
 							<InfoIcon />
 						</ListItemIcon>
-						ABOUT US
+						ABOUT
 					</ListItemButton>
 				</ul>
 			</List>
