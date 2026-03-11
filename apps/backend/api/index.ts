@@ -52,7 +52,7 @@ app.use(
 		origin: [process.env.NEXT_PUBLIC_WEBSITE_URL, "http://localhost:3000"],
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
-	})
+	}),
 );
 
 // Parse JSON request bodies
@@ -193,7 +193,7 @@ app.get("/all-food", async (req: Request, res: Response) => {
 				const data = await fetchFood(location);
 				food[location] = data;
 				return { location, data };
-			})
+			}),
 		);
 	}
 
@@ -202,7 +202,7 @@ app.get("/all-food", async (req: Request, res: Response) => {
 		items.filter(Boolean).map((item) => ({
 			location,
 			name: item,
-		}))
+		})),
 	);
 
 	res.json(transformedFoodList);
@@ -213,7 +213,7 @@ app.post("/scan-items", async (req: Request, res: Response) => {
 	try {
 		const visionKeyJson = Buffer.from(
 			process.env.VISION_KEY_JSON ?? "",
-			"base64"
+			"base64",
 		).toString("utf-8");
 		const credentials = JSON.parse(visionKeyJson);
 
@@ -478,7 +478,7 @@ function extractFoodItemsFallback(lines: string[]): string[] {
 		// Check if line contains food keywords
 		if (
 			foodKeywords.some((keyword) =>
-				line.toLowerCase().includes(keyword.toLowerCase())
+				line.toLowerCase().includes(keyword.toLowerCase()),
 			)
 		) {
 			const cleaned = cleanDescription(line);
@@ -527,8 +527,14 @@ app.delete("/food/:location/:id", async (req: Request, res: Response) => {
 		res.status(200).json({ success: true });
 	} catch (error) {
 		console.error("Error deleting food document:", error);
-		res.status(500).json({ error: "Failed to delete food document" });
+		res.status(500).json({ error: "Failed to delete food documents" });
 	}
+});
+
+// Ensures propper port usage
+const PORT = process.env.EXPRESS_PORT || 3022;
+app.listen(PORT, () => {
+	console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
