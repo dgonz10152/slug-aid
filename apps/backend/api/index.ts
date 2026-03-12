@@ -13,7 +13,32 @@ import {
 	deleteDoc,
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, listAll, ref } from "firebase/storage";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+import * as admin from "firebase-admin";
+
+// Initialize Firebase Admin SDK
+const serviceAccountJson = Buffer.from(
+	process.env.FIREBASE_SERVICE_ACCOUNT_KEY ?? "",
+	"base64",
+).toString("utf-8");
+
+if (serviceAccountJson) {
+	const serviceAccount = JSON.parse(serviceAccountJson);
+	admin.initializeApp({
+		credential: admin.credential.cert(serviceAccount),
+	});
+} else {
+	console.warn("FIREBASE_SERVICE_ACCOUNT_KEY not set — auth middleware will reject all requests");
+}
+
+// Parse allowed emails from env
+const allowedEmails: string[] = (() => {
+	try {
+		return JSON.parse(process.env.ALLOWED_EMAILS ?? "[]");
+	} catch {
+		return [];
+	}
+})();
 
 const express = require("express");
 
@@ -52,15 +77,49 @@ app.use(
 		origin: [process.env.NEXT_PUBLIC_WEBSITE_URL, "http://localhost:3000"],
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
-	})
+	}),
 );
 
 // Parse JSON request bodies
 app.use(express.json());
 
+// Auth middleware — verifies Firebase ID token and checks email allowlist
+async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+	const authHeader = req.headers.authorization;
+	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		res.status(401).json({ error: "Missing or invalid Authorization header" });
+		return;
+	}
+
+	const token = authHeader.split("Bearer ")[1];
+	try {
+		const decoded = await admin.auth().verifyIdToken(token);
+		const email = decoded.email;
+		if (!email || !allowedEmails.includes(email)) {
+			res.status(403).json({ error: "Forbidden: email not in allowlist" });
+			return;
+		}
+		next();
+	} catch (error) {
+		console.error("Auth error:", error);
+		res.status(401).json({ error: "Invalid or expired token" });
+		return;
+	}
+}
+
+// Location validation middleware — checks that the location param is valid
+function validateLocation(req: Request, res: Response, next: NextFunction) {
+	const location = req.params.parameter || req.params.location;
+	if (!location || !locations.includes(location)) {
+		res.status(400).json({ error: `Invalid location: ${location}` });
+		return;
+	}
+	next();
+}
+
 let food: { [key: string]: { id: string; labels: string[] }[] } = {};
 let images: { [key: string]: string[] } = {};
-let status: { [key: string]: string } = {};
+let status: { [key: string]: { message: string; timestamp: string } } = {};
 
 //uploads food labels to firebase
 async function uploadLabels(location: string, labels: string[]) {
@@ -84,16 +143,6 @@ async function fetchImages(location: string) {
 	return urls;
 }
 
-//fetches the food list of given location from firebase
-async function fetchFood(location: string) {
-	const foodArr: DocumentData = [];
-	const querySnapshot = await getDocs(collection(db, location));
-	querySnapshot.forEach((doc) => {
-		foodArr.push(doc.data().labels);
-	});
-	return foodArr.flat();
-}
-
 //fetches the food list with ids for a given location from firebase
 async function fetchFoodWithIds(location: string) {
 	const foodArr: { id: string; labels: string[] }[] = [];
@@ -106,13 +155,14 @@ async function fetchFoodWithIds(location: string) {
 
 //fetches the status of any given location from firebase
 async function fetchStatus(location: string) {
-	let status = "";
+	let result = { message: "", timestamp: "" };
 	const queryDoc = await getDoc(doc(db, "status", location));
 
 	if (queryDoc.exists()) {
-		status = queryDoc.data().status;
+		result.message = queryDoc.data().status ?? "";
+		result.timestamp = queryDoc.data().timestamp ?? "";
 	}
-	return status;
+	return result;
 }
 
 //Updates the status cache on updated values
@@ -188,12 +238,10 @@ app.get("/all-food", async (req: Request, res: Response) => {
 
 	if (Object.keys(food).length === 0) {
 		// Fetch all locations in parallel and wait for them to complete
-		const results = await Promise.all(
+		await Promise.all(
 			locations.map(async (location) => {
-				const data = await fetchFood(location);
-				food[location] = data;
-				return { location, data };
-			})
+				food[location] = await fetchFoodWithIds(location);
+			}),
 		);
 	}
 
@@ -202,18 +250,18 @@ app.get("/all-food", async (req: Request, res: Response) => {
 		items.filter(Boolean).map((item) => ({
 			location,
 			name: item,
-		}))
+		})),
 	);
 
 	res.json(transformedFoodList);
 });
 
 //scans the pictures for labels and uploads the results to firebase
-app.post("/scan-items", async (req: Request, res: Response) => {
+app.post("/scan-items", authMiddleware, async (req: Request, res: Response) => {
 	try {
 		const visionKeyJson = Buffer.from(
 			process.env.VISION_KEY_JSON ?? "",
-			"base64"
+			"base64",
 		).toString("utf-8");
 		const credentials = JSON.parse(visionKeyJson);
 
@@ -222,7 +270,11 @@ app.post("/scan-items", async (req: Request, res: Response) => {
 			credentials,
 		});
 
-		const { url, location } = JSON.parse(req.headers.body as string);
+		const { url, location } = req.body;
+		if (!url || !location || !locations.includes(location)) {
+			res.status(400).json({ error: "Missing or invalid url/location" });
+			return;
+		}
 		// Use await inside the async function
 		const [result] = await client.objectLocalization(url);
 		const labels = result.localizedObjectAnnotations;
@@ -245,11 +297,16 @@ app.post("/scan-items", async (req: Request, res: Response) => {
 });
 
 //scans a PDF for item descriptions and uploads them to firebase
-app.post("/scan-pdf", async (req: Request, res: Response) => {
+app.post("/scan-pdf", authMiddleware, async (req: Request, res: Response) => {
 	try {
 		const { url, location } = req.body;
 		if (!url || !location) {
-			return res.status(400).json({ error: "Missing url or location" });
+			res.status(400).json({ error: "Missing url or location" });
+			return;
+		}
+		if (!locations.includes(location)) {
+			res.status(400).json({ error: `Invalid location: ${location}` });
+			return;
 		}
 
 		// Download the PDF file
@@ -478,7 +535,7 @@ function extractFoodItemsFallback(lines: string[]): string[] {
 		// Check if line contains food keywords
 		if (
 			foodKeywords.some((keyword) =>
-				line.toLowerCase().includes(keyword.toLowerCase())
+				line.toLowerCase().includes(keyword.toLowerCase()),
 			)
 		) {
 			const cleaned = cleanDescription(line);
@@ -491,12 +548,13 @@ function extractFoodItemsFallback(lines: string[]): string[] {
 	return descriptions;
 }
 
-app.put("/update-status/:parameter", async (req: Request, res: Response) => {
+app.put("/update-status/:parameter", authMiddleware, validateLocation, async (req: Request, res: Response) => {
 	try {
-		const { message } = JSON.parse(req.headers.body as string);
+		const { message } = req.body;
 		const location = req.params.parameter;
+		const timestamp = new Date().toISOString();
 		console.log(location);
-		await setDoc(doc(db, "status", location), { status: message });
+		await setDoc(doc(db, "status", location), { status: message, timestamp });
 		console.log("Document added/updated successfully!");
 	} catch (error) {
 		console.error("Error adding/updating document:", error);
@@ -504,7 +562,7 @@ app.put("/update-status/:parameter", async (req: Request, res: Response) => {
 	res.status(200).json({ success: true });
 });
 
-app.put("/update-food/:parameter", async (req: Request, res: Response) => {
+app.put("/update-food/:parameter", authMiddleware, validateLocation, async (req: Request, res: Response) => {
 	try {
 		const { message } = req.body;
 		console.log(message);
@@ -520,15 +578,21 @@ app.put("/update-food/:parameter", async (req: Request, res: Response) => {
 });
 
 // DELETE a food document by id for a given location
-app.delete("/food/:location/:id", async (req: Request, res: Response) => {
+app.delete("/food/:location/:id", authMiddleware, validateLocation, async (req: Request, res: Response) => {
 	const { location, id } = req.params;
 	try {
 		await deleteDoc(doc(db, location, id));
 		res.status(200).json({ success: true });
 	} catch (error) {
 		console.error("Error deleting food document:", error);
-		res.status(500).json({ error: "Failed to delete food document" });
+		res.status(500).json({ error: "Failed to delete food documents" });
 	}
+});
+
+// Ensures propper port usage
+const PORT = process.env.EXPRESS_PORT || 3022;
+app.listen(PORT, () => {
+	console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

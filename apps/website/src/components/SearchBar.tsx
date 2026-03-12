@@ -60,7 +60,7 @@ export default function SearchBar() {
 	const [anchorEl, setAnchorEl] = useState<HTMLInputElement | null>(null);
 	const [results, setResults] = useState<FuseResult<SearchResults>[]>([]);
 	const searchBarRef = useRef<HTMLInputElement | null>(null);
-	const open = Boolean(anchorEl);
+	const open = Boolean(anchorEl) && searchTerm.length > 0;
 	// Fetch the data once on mount
 	useEffect(() => {
 		const fetchData = async () => {
@@ -87,7 +87,7 @@ export default function SearchBar() {
 		}
 
 		const fuse = new Fuse(foodList, {
-			keys: ["name.labels[0]", "location"],
+			keys: ["name.labels", "location"],
 			threshold: 0.3,
 		});
 

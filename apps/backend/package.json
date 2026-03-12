@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"main": "index.ts",
 	"scripts": {
-		"dev": "vercel dev",
+		"dev": "npx ts-node api/index.ts",
 		"build": "tsc",
 		"start": "node api/index.ts"
 	},
@@ -20,6 +20,7 @@
 		"dotenv": "^16.4.7",
 		"express": "^4.21.2",
 		"firebase": "^11.2.0",
+		"firebase-admin": "^13.7.0",
 		"nodemon": "^3.1.9",
 		"pdf-parse": "^1.1.1",
 		"tslib": "^2.8.1"

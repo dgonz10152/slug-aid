@@ -3,9 +3,13 @@
 import Image from "next/image";
 import { useState, ChangeEvent, useEffect } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../utils/firebase-config";
+import { storage, auth } from "../utils/firebase-config";
 import analyzeImage from "@/utils/cloud-vision";
 import LocationData from "@/location-data.json";
+
+async function getAuthToken(): Promise<string | undefined> {
+	return auth.currentUser?.getIdToken();
+}
 
 import {
 	Box,
@@ -28,27 +32,24 @@ async function updateStatus({
 	location: string;
 }) {
 	try {
-		console.log("start");
+		const token = await getAuthToken();
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_URL}/update-status/${location}`,
 			{
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
-					body: JSON.stringify({ message: message }),
+					...(token && { Authorization: `Bearer ${token}` }),
 				},
+				body: JSON.stringify({ message }),
 			}
 		);
-
-		console.log("sending try");
 
 		if (!response.ok) {
 			throw new Error(`Error: ${response.statusText}`);
 		}
 
-		console.log("response");
 		const data = await response.json();
-		console.log("Done:", data);
 		return data;
 	} catch (error) {
 		console.error("Error fetching data:", error);
@@ -62,30 +63,25 @@ async function updateFood({
 	message: string[];
 	location: string;
 }) {
-	console.log(message);
-	console.log(location);
-
 	try {
+		const token = await getAuthToken();
 		const response = await fetch(
 			`${process.env.NEXT_PUBLIC_API_URL}/update-food/${location}`,
 			{
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
+					...(token && { Authorization: `Bearer ${token}` }),
 				},
-				body: JSON.stringify({ message: message }),
+				body: JSON.stringify({ message }),
 			}
 		);
-
-		console.log("response");
-		console.log(response);
 
 		if (!response.ok) {
 			throw new Error(`Error: ${response.statusText}`);
 		}
 
 		const data = await response.json();
-		console.log(data);
 		return data;
 	} catch (error) {
 		console.error("Error updating food:", error);
@@ -157,10 +153,14 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 	const handleDeleteSelected = async () => {
 		setFoodLoading(true);
 		try {
+			const token = await getAuthToken();
 			await Promise.all(
 				selectedFoodIds.map((id) =>
 					fetch(`${process.env.NEXT_PUBLIC_API_URL}/food/${location}/${id}`, {
 						method: "DELETE",
+						headers: {
+							...(token && { Authorization: `Bearer ${token}` }),
+						},
 					})
 				)
 			);
@@ -260,9 +260,13 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 			const url = await getDownloadURL(storageRef);
 			setPdfUploadedUrl(url);
 			// Call backend to scan PDF
+			const token = await getAuthToken();
 			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scan-pdf`, {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					...(token && { Authorization: `Bearer ${token}` }),
+				},
 				body: JSON.stringify({ url, location }),
 			});
 			if (!response.ok) {
