@@ -12,7 +12,7 @@ const BackgroundImage = () => {
 	return (
 		<Box
 			sx={{
-				height: "93vh",
+				flex: 1,
 				width: "100%",
 				position: "relative",
 				overflow: "hidden",
@@ -43,26 +43,33 @@ const BackgroundImage = () => {
 					zIndex: 6,
 					color: "white",
 					textAlign: "center",
-					paddingTop: "20px",
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					justifyContent: "center",
+					height: "100%",
+					px: { xs: 2, sm: 4 },
 				}}
 			>
 				<Typography
 					variant="h1"
 					component="h1"
-					sx={{ marginTop: "10px" }}
-					className="p-30 pt-20 m-30 z-30"
+					sx={{
+						fontSize: { xs: "2.5rem", sm: "3.5rem", md: "6rem" },
+					}}
 				>
 					PantryPal
 				</Typography>
-				<Typography variant="h5" component="p" sx={{ marginTop: "10px" }}>
+				<Typography
+					variant="h5"
+					component="p"
+					sx={{
+						fontSize: { xs: "1rem", sm: "1.25rem", md: "1.5rem" },
+						mb: 3,
+					}}
+				>
 					Simplifying essential services for Slugs, one step at a time.
 				</Typography>
-				<Typography
-					variant="h1"
-					component="h1"
-					sx={{ marginTop: "10px" }}
-					className="p-30 pt-20 m-30 z-30"
-				></Typography>
 				<Button variant="contained" href="/map" size="large">
 					MAP
 				</Button>
@@ -73,7 +80,7 @@ const BackgroundImage = () => {
 
 export default function Home() {
 	return (
-		<div style={{ height: "100vh", overflow: "hidden" }}>
+		<div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
 			<MenuBar />
 			<BackgroundImage />
 		</div>
