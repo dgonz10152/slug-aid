@@ -63,6 +63,7 @@ const BackgroundImage = () => {
 	);
 };
 
+
 export default function Home() {
 	return (
 		<>

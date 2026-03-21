@@ -301,8 +301,10 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 					background: "white",
 				}}
 			>
+
 				{/* Uploader Section */}
 				<Box sx={{ flex: 1, minWidth: 0 }}>
+					{/*
 					<FormControl fullWidth margin="normal">
 						<InputLabel id="locations-label">Location</InputLabel>
 						<Select
@@ -318,6 +320,7 @@ export default function ImageUploader({ signOut }: ImageUploaderProps) {
 							))}
 						</Select>
 					</FormControl>
+					*/}
 
 					<TextField
 						type="file"
