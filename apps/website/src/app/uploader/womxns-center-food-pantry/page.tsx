@@ -38,8 +38,6 @@ const Home = () => {
 		window.location.reload();
 	}
 
-	console.log(allowedEmails);
-
 	if (loading) {
 		return <p>Loading...</p>;
 	}

@@ -64,10 +64,6 @@ export default function SearchBar() {
 	// Fetch the data once on mount
 
 	useEffect(() => {
-		console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-	}, []);
-
-	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/all-food`);
