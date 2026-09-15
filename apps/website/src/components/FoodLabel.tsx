@@ -1,59 +1,121 @@
-// defines the inventory statuses that a food card can display
+import FavoriteButton from "@/components/FavoriteButton";
+
 type Availability = "in_stock" | "running_out" | "out_of_stock";
 
-interface FoodLabelprops {
-	label: string;
-	availability: Availability;
+interface FoodLabelProps {
+  label: string;
+  availability: Availability;
+  locationId?: string;
+  foodId?: string;
+  isFavorite?: boolean;
+  onFavoriteChange?: (
+    foodId: string,
+    isFavorite: boolean,
+  ) => void;
 }
 
-// maps each availability value to accessible status text and color styling
-const availabilityStyles: Record<Availability, {text: string; classes: string;}> = {
-	in_stock: {
-		text: "IN STOCK",
-		classes: "border-green-300 bg-green-100 text-green-800",
-	},
-	running_out: {
-		text: "RUNNING OUT",
-		classes: "border-yellow-300 bg-yellow-100 text-yellow-800",
-	},
-	out_of_stock: {
-		text: "OUT OF STOCK",
-		classes: "border-red-300 bg-red-100 text-red-800",
-	},
+const availabilityStyles = {
+  in_stock: {
+    text: "In Stock",
+    background: "#ecfdf5",
+    color: "#166534",
+    dot: "#16a34a",
+  },
+  running_out: {
+    text: "Running Low",
+    background: "#fffbeb",
+    color: "#92400e",
+    dot: "#d97706",
+  },
+  out_of_stock: {
+    text: "Out of Stock",
+    background: "#fef2f2",
+    color: "#991b1b",
+    dot: "#dc2626",
+  },
 };
 
-export default function FoodLabel({ label, availability, }: FoodLabelprops) {
-	const status = availabilityStyles[availability];
-	// Function to add breaks for words longer than 10 characters and at the beginning of numbers
-	const addBreaks = (text: string) => {
-		return text
-			.split(" ")
-			.map((word) => {
-				if (word.length > 10) {
-					// First, add soft breaks before numbers
-					let processedWord = word.replace(/(\d+)/g, "\u200B$1");
-					// Then, insert a soft break every 10 characters
-					processedWord = processedWord
-						.replace(/(.{10})/g, "$1\u200B")
-						.replace(/\u200B$/, "");
-					return processedWord;
-				}
-				return word;
-			})
-			.join(" ");
-	};
+export default function FoodLabel({
+  label,
+  availability,
+  locationId,
+  foodId,
+  isFavorite = false,
+  onFavoriteChange,
+}: FoodLabelProps) {
+  const status = availabilityStyles[availability];
 
-	return (
-		<div className="flex flex-col items-center justify-center gap-2 rounded-md p-2 py-4 text-center text-2xl font-semibold text-slugSecondaryBlue shadow-md">
-			<p className="break-words">
-				{addBreaks(label)}
-			</p>
+  return (
+    <div
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: 10,
+        minWidth: 0,
+        minHeight: 108,
+        height: "100%",
+        boxSizing: "border-box",
+        padding: "16px",
+        border: "1px solid #e2e8f0",
+        borderRadius: 12,
+        backgroundColor: "#ffffff",
+        boxShadow: "0 2px 6px rgba(15, 23, 42, 0.04)",
+        textAlign: "left",
+      }}
+    >
+      {locationId && foodId && onFavoriteChange && (
+        <FavoriteButton
+          locationId={locationId}
+          foodId={foodId}
+          isFavorite={isFavorite}
+          onFavoriteChange={onFavoriteChange}
+        />
+      )}
 
-			<span
-				className={`rounded-full border px-3 py-1 text-xs font-bold tracking-wide ${status.classes}`}
-			>
-				{status.text}
-			</span>
-		</div>
-	);
+      <p
+        style={{
+          margin: 0,
+          paddingRight: 44,
+          color: "#173b63",
+          fontSize: 18,
+          fontWeight: 600,
+          lineHeight: 1.4,
+          overflowWrap: "anywhere",
+        }}
+      >
+        {label}
+      </p>
+
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 7,
+          padding: "5px 10px",
+          borderRadius: 999,
+          backgroundColor: status.background,
+          color: status.color,
+          fontSize: 12,
+          fontWeight: 600,
+          lineHeight: 1.5,
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 7,
+            height: 7,
+            flexShrink: 0,
+            borderRadius: "50%",
+            backgroundColor: status.dot,
+          }}
+        />
+
+        {status.text}
+      </span>
+    </div>
+  );
 }
