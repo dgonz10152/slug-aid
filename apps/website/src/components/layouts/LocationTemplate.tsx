@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import Footer from "../Footer";
 import { Dialog, DialogContent } from "@mui/material";
 import FoodLabel from "../FoodLabel";
+import { useAuth } from "@/components/AuthProvider";
+import { loadFavoriteFoodIds } from "@/utils/favorites-api";
 
 type Availability = "in_stock" | "running_out" | "out_of_stock";
 interface FoodItem {
@@ -43,6 +45,56 @@ export default function LocationTemplate({ config }: Config) {
 	const [foodList, setFoodList] = useState<FoodItem[]>([]);
 	const [foodImages, setFoodImages] = useState<string[]>([]);
 	const [status, setStatus] = useState<{ message: string; timestamp: string } | null>(null);
+	const { user, isLoading: isAuthLoading } = useAuth();
+
+	const [favoriteFoodIds, setFavoriteFoodIds] = useState<
+	Set<string>
+	>(new Set());
+	useEffect(() => {
+		let cancelled = false;
+
+		async function loadFavorites(): Promise<void> {
+			if (isAuthLoading) return;
+
+			if (!user) {
+			setFavoriteFoodIds(new Set());
+			return;
+			}
+
+			try {
+			const ids = await loadFavoriteFoodIds(config.dbName);
+
+			if (!cancelled) {
+				setFavoriteFoodIds(ids);
+			}
+			} catch (error) {
+			console.error("Could not load favorites:", error);
+			}
+		}
+
+		void loadFavorites();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [config.dbName, isAuthLoading, user]);
+
+	function handleFavoriteChange(
+		foodId: string,
+		isFavorite: boolean,
+		): void {
+		setFavoriteFoodIds((currentIds) => {
+			const nextIds = new Set(currentIds);
+
+			if (isFavorite) {
+			nextIds.add(foodId);
+			} else {
+			nextIds.delete(foodId);
+			}
+
+			return nextIds;
+		});
+	}
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -183,7 +235,7 @@ export default function LocationTemplate({ config }: Config) {
 						{foodList
 							.sort((a, b) => a.labels.join(", ").length - b.labels.join(", ").length)
 							.map((food) => (
-								<FoodLabel key={food.id} label={food.labels.join(", ")} availability={food.availability ?? "in_stock"}/>
+								<FoodLabel key={food.id} label={food.labels.join(", ")} availability={food.availability ?? "in_stock"} locationId={config.dbName} foodId={food.id} isFavorite={favoriteFoodIds.has(food.id)} onFavoriteChange={handleFavoriteChange}/>
 							))}
 					</div>
 				</div>

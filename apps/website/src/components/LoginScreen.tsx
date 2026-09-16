@@ -1,18 +1,22 @@
-import { auth, googleProvider } from "@/utils/firebase-config";
-import { signInWithPopup } from "firebase/auth";
+"use client"
+import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
 
 function LoginScreen() {
-	const handleGoogleLogin = async () => {
-		try {
-			await signInWithPopup(auth, googleProvider);
-			// No need to manually handle login; App.jsx will react to auth state
-			window.location.reload();
-		} catch (error) {
-			console.error("Google Sign-In Error:", error);
-			alert("Google Sign-In failed. Check console for details.");
-		}
-	};
+	const { signIn } = useAuth();
+	const [errorMessage, setErrorMessage] = useState<string | null>(
+		null,
+	);
 
+	async function handleGoogleLogin(): Promise<void> {
+		try {
+		setErrorMessage(null);
+		await signIn();
+		} catch (error) {
+		console.error("Google Sign-In Error:", error);
+		setErrorMessage("Google Sign-In failed. Please try again.");
+		}
+	}
 	return (
 		<div
 			style={{
