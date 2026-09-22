@@ -4,14 +4,14 @@ async function fetchData({ url, location }: { url: string; location: string }) {
 	try {
 		const token = await auth.currentUser?.getIdToken();
 		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}/scan-items`,
+			`${process.env.NEXT_PUBLIC_API_URL}/scan-items/${encodeURIComponent(location)}`,
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					...(token && { Authorization: `Bearer ${token}` }),
 				},
-				body: JSON.stringify({ url, location }),
+				body: JSON.stringify({ url }),
 			}
 		);
 

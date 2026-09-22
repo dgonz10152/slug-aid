@@ -26,6 +26,9 @@ import { ThemeProvider } from "@emotion/react";
 import Link from "next/link";
 import SearchBar from "./SearchBar";
 import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import Button from "@mui/material/Button";
+import Snackbar from "@mui/material/Snackbar";
 
 const theme = createTheme({
 	palette: {
@@ -98,6 +101,33 @@ function DrawerInfo() {
 export default function MenuBar() {
 	const [open, setOpen] = useState(false);
 
+	const { user, isLoading, signIn, signOut } = useAuth();
+	const [isBusy, setIsBusy] = useState(false);
+	const [authError, setAuthError] = useState<string | null>(null);
+
+	async function handleAccountClick(): Promise<void> {
+		if (isLoading || isBusy) return;
+
+		setIsBusy(true);
+		setAuthError(null);
+
+		try {
+			if (user) {
+			await signOut();
+			} else {
+			await signIn();
+			}
+		} catch {
+			setAuthError(
+			user
+				? "Could not sign out. Please try again."
+				: "Could not sign in. Please try again.",
+			);
+		} finally {
+			setIsBusy(false);
+		}
+	}
+
 	const toggleDrawer = (newOpen: boolean) => () => {
 		setOpen(newOpen);
 	};
@@ -116,15 +146,56 @@ export default function MenuBar() {
 								PantryPal
 							</Typography>
 						</Link>
-						<Box sx={{ display: "flex", flexDirection: "row", flexGrow: "1" }}>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "row",
+								flexGrow: 1,
+								minWidth: 0,
+							}}
+							>
 							<SearchBar />
-						</Box>
+							</Box>
+
+							<Button
+							type="button"
+							onClick={handleAccountClick}
+							disabled={isLoading || isBusy}
+							variant="outlined"
+							sx={{
+								ml: 1,
+								flexShrink: 0,
+								whiteSpace: "nowrap",
+								color: "#1f2937",
+								borderColor: "currentColor",
+								textTransform: "none",
+								fontWeight: 600,
+								"&:hover": {
+								borderColor: "currentColor",
+								backgroundColor: "rgba(0, 0, 0, 0.06)",
+								},
+							}}
+							>
+							{isLoading
+								? "Loading…"
+								: isBusy
+								? "Please wait…"
+								: user
+									? "Sign out"
+									: "Sign in"}
+							</Button>
 					</Toolbar>
 				</AppBar>
 			</ThemeProvider>
 			<Drawer className="w-full" open={open} onClose={toggleDrawer(false)}>
 				<DrawerInfo />
 			</Drawer>
+			<Snackbar
+				open={Boolean(authError)}
+				autoHideDuration={6000}
+				message={authError}
+				onClose={() => setAuthError(null)}
+			/>
 		</>
 	);
 }

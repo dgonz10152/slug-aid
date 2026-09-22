@@ -7,6 +7,14 @@ import { storage, auth } from "../utils/firebase-config";
 import analyzeImage from "@/utils/cloud-vision";
 import LocationData from "@/location-data.json";
 
+function normalizeFoodName(name: string): string {
+  return name
+    .normalize("NFKC")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 async function getAuthToken(): Promise<string | undefined> {
 	return auth.currentUser?.getIdToken();
 }
@@ -64,34 +72,38 @@ async function updateFood({
 	message,
 	location,
 	availability,
-}: {
+	}: {
 	message: string[];
 	location: string;
 	availability: Availability;
-}) {
-	try {
-		const token = await getAuthToken();
-		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}/update-food/${location}`,
-			{
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-					...(token && { Authorization: `Bearer ${token}` }),
-				},
-				body: JSON.stringify({ message, availability, }),
-			}
-		);
+	}) {
+	const token = await getAuthToken();
 
-		if (!response.ok) {
-			throw new Error(`Error: ${response.statusText}`);
+	const response = await fetch(
+	`${process.env.NEXT_PUBLIC_API_URL}/update-food/${encodeURIComponent(location)}`,
+		{
+			method: "PUT",
+			headers: {
+			"Content-Type": "application/json",
+			...(token && { Authorization: `Bearer ${token}` }),
+			},
+			body: JSON.stringify({ message, availability }),
 		}
+	);
 
-		const data = await response.json();
-		return data;
-	} catch (error) {
-		console.error("Error updating food:", error);
+	const data = await response.json();
+
+	if (!response.ok) {
+	throw Object.assign(
+		new Error(
+		typeof data.error === "string"
+			? data.error
+			: "Failed to update food."
+		),
+		{ status: response.status }
+	);
 	}
+  return data;
 }
 
 interface ImageUploaderProps {
@@ -116,7 +128,7 @@ export default function ImageUploader({
 	// Snackbar state
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
-	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "info">(
 		"success"
 	);
 
@@ -336,8 +348,6 @@ export default function ImageUploader({
 		try {
 			const storageRef = ref(storage, `${location}/pdfs/${pdfFile.name}`);
 			await uploadBytes(storageRef, pdfFile);
-			const url = await getDownloadURL(storageRef);
-			setPdfUploadedUrl(url);
 			// Call backend to scan PDF
 			const token = await getAuthToken();
 			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scan-pdf/${location}`, {
@@ -346,16 +356,75 @@ export default function ImageUploader({
 					"Content-Type": "application/json",
 					...(token && { Authorization: `Bearer ${token}` }),
 				},
-				body: JSON.stringify({ url, location }),
+				body: JSON.stringify({
+					objectPath: storageRef.fullPath,
+				}),
 			});
 			if (!response.ok) {
 				throw new Error(`Error: ${response.statusText}`);
 			}
 			const data = await response.json();
-			const previewItems = (data.items || []).map((name: string, index: number) => ({
-				id: `${index}-${name}`,
-				name,
-				selected: true,
+			// Fetch the latest inventory for this facility.
+			const inventoryResponse = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/food-ids/${encodeURIComponent(location)}`,
+			{ cache: "no-store" }
+			);
+
+			if (!inventoryResponse.ok) {
+			throw new Error("Could not check existing inventory. Please try again.");
+			}
+
+			const inventoryData = await inventoryResponse.json();
+
+			if (
+			!Array.isArray(inventoryData.food) ||
+			!Array.isArray(data.items)
+			) {
+			throw new Error("Unexpected inventory or scan response.");
+			}
+
+			// Each inventory record is displayed using labels.join(", ").
+			const existingNames = new Set<string>();
+
+			for (const food of inventoryData.food) {
+			if (
+				!Array.isArray(food.labels) ||
+				!food.labels.every((label: unknown) => typeof label === "string")
+			) {
+				throw new Error("An inventory item has invalid labels.");
+			}
+
+			existingNames.add(normalizeFoodName(food.labels.join(", ")));
+			}
+
+			const seenNames = new Set<string>(existingNames);
+			const newNames: string[] = [];
+
+			for (const item of data.items) {
+			if (typeof item !== "string") continue;
+
+			const name = item.trim().replace(/\s+/g, " ");
+			const normalized = normalizeFoodName(name);
+
+			if (!normalized || seenNames.has(normalized)) continue;
+
+			seenNames.add(normalized);
+			newNames.push(name);
+			}
+
+			if (newNames.length === 0) {
+			setPdfPreviewItems([]);
+			setPdfPreviewOpen(false);
+			setSnackbarMessage("No new items to add. Scanned items may already be in inventory.");
+			setSnackbarSeverity("info");
+			setSnackbarOpen(true);
+			return;
+			}
+
+			const previewItems = newNames.map((name, index) => ({
+			id: `${index}-${name}`,
+			name,
+			selected: true,
 			}));
 			setPdfPreviewItems(previewItems);
 			setPdfPreviewOpen(true);
@@ -406,11 +475,9 @@ export default function ImageUploader({
 			const data = await response.json();
 
 			setSnackbarMessage(
-				data.uploaded 
-					? `Added ${data.uploaded} items successfully.`
-					: "Items saved successfully."
+			`Added ${data.uploaded} item(s); skipped ${data.skipped} duplicate(s).`
 			);
-			setSnackbarSeverity("success");
+			setSnackbarSeverity(data.uploaded > 0 ? "success" : "info");
 			setSnackbarOpen(true);
 			setPdfPreviewItems([]);
 			setPdfPreviewOpen(false);
@@ -419,6 +486,8 @@ export default function ImageUploader({
 		} catch (error) {
 			console.error("Error saving approved PDF items:", error);
 			setSnackbarMessage("Error saving approved items.");
+			setSnackbarSeverity("error");
+  		setSnackbarOpen(true);
 		} finally {
 			setActionLoading(false);
 		}
@@ -596,43 +665,78 @@ export default function ImageUploader({
 							// Upload each food item individually
 							let successCount = 0;
 							let errorCount = 0;
+							let duplicateCount = 0;
 
+							try {
 							for (const foodItem of foodArray) {
 								try {
-									const result = await updateFood({
-										message: [foodItem], // Send as single item array
-										location: location,
-										availability: foodAvailability,
-									});
-									if (result) {
-										successCount++;
-									} else {
-										errorCount++;
-									}
+								const result = await updateFood({
+									message: [foodItem],
+									location,
+									availability: foodAvailability,
+								});
+
+								if (result?.success === true) {
+									successCount++;
+								} else {
+									errorCount++;
+								}
 								} catch (error) {
+								if (
+									error instanceof Error &&
+									"status" in error &&
+									error.status === 409
+								) {
+									duplicateCount++;
+								} else {
 									console.error(`Error uploading ${foodItem}:`, error);
 									errorCount++;
 								}
+								}
 							}
 
-							if (successCount > 0) {
+							// Keep the input if anything failed so the user can retry.
+							if (errorCount === 0 && successCount + duplicateCount > 0) {
 								setFoodText("");
 								setFoodAvailability("in_stock");
-								setSnackbarMessage(
-									`Food updated successfully! ${successCount} items added${errorCount > 0 ? `, ${errorCount} failed` : ""}`
-								);
-								setSnackbarSeverity("success");
-								setSnackbarOpen(true);
-								await fetchFoodList(); // Refresh food list after update
-							} else {
-								setSnackbarMessage("Failed to update food items");
-								setSnackbarSeverity("error");
-								setSnackbarOpen(true);
 							}
 
-							setActionLoading(false); // End loading
-						}}
-						fullWidth
+							const messageParts = [
+								`Added ${successCount} item(s)`,
+								`skipped ${duplicateCount} duplicate(s)`,
+							];
+
+							if (errorCount > 0) {
+								messageParts.push(`${errorCount} failed`);
+							}
+
+							setSnackbarMessage(`${messageParts.join("; ")}.`);
+							setSnackbarSeverity(
+								errorCount > 0
+								? "error"
+								: successCount > 0
+									? "success"
+									: "info"
+							);
+							setSnackbarOpen(true);
+
+							if (successCount > 0) {
+								try {
+								await fetchFoodList();
+								} catch (refreshError) {
+								console.error("Items saved, but refresh failed:", refreshError);
+								setSnackbarMessage(
+									`${messageParts.join("; ")}. Could not refresh the list—reload the page.`
+								);
+								setSnackbarSeverity("error");
+								setSnackbarOpen(true);
+									}
+								}
+									} finally {
+									setActionLoading(false);
+									}
+								}}
+							fullWidth
 						disabled={actionLoading}
 						sx={{ marginTop: 2 }}
 					>

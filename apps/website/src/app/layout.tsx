@@ -1,6 +1,7 @@
 import AnalyticsInitializer from "@/utils/analytics-initializer";
 import "./globals.css";
 import { Metadata } from "next";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
 	title: "Pantry Pal",
@@ -15,8 +16,10 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<AnalyticsInitializer />
-			<body className={"antialiased"}>{children}</body>
+			<body>
+				<AnalyticsInitializer />
+				<AuthProvider>{children}</AuthProvider>
+			</body>
 		</html>
 	);
 }
